@@ -1,0 +1,366 @@
+\documentclass[12pt, a4paper]{report}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[romanian]{babel} % Sets language to Romanian
+\usepackage[margin=2.5cm]{geometry} % Standard margins
+\usepackage{graphicx} % For uploading diagrams/screenshots
+\usepackage{float}    % To force images where you want them
+\usepackage{hyperref} % For clickable Table of Contents
+\usepackage{xcolor}   % For code coloring
+\usepackage{listings} % For code syntax highlighting
+\usepackage{titlesec} % To format chapter titles
+
+% --- Modern Code Highlighting Setup (SQL/PLSQL) ---
+% Defining colors similar to VS Code / Modern Editors
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{keywordcolor}{rgb}{0.0, 0.0, 1.0}
+
+\lstdefinestyle{modernsql}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{keywordcolor}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize, % Typewriter font
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    language=SQL,
+    morekeywords={VARCHAR2, NUMBER, DATE, CONSTRAINT, PRIMARY, KEY, FOREIGN, REFERENCES, CREATE, OR, REPLACE, TRIGGER, PROCEDURE, FUNCTION, BEGIN, END, IF, THEN, ELSIF, ELSE, LOOP, EXIT, WHEN, CURSOR, OPEN, FETCH, CLOSE, TYPE, IS, RECORD, TABLE, INDEX, BY, EXCEPTION, PRAGMA, EXCEPTION_INIT}
+}
+
+\lstset{style=modernsql}
+
+% --- Chapter Formatting ---
+% Starts new chapters on a new page automatically
+\titleformat{\chapter}[block]
+  {\normalfont\huge\bfseries}{\thechapter.}{1em}{\Huge}
+\titlespacing*{\chapter}{0pt}{-30pt}{20pt}
+
+% --- Document Info ---
+\title{Proiect SGBD}
+\author{Numele și Prenumele Tău}
+\date{2025-2026}
+
+\begin{document}
+
+% =========================================================
+% 1. PAGINA DE TITLU [cite: 29]
+% =========================================================
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    \Huge
+    \textbf{Sisteme de Gestiune a Bazelor de Date}
+
+    \vspace{0.5cm}
+    \LARGE
+    Proiect Semestrial
+
+    \vspace{1.5cm}
+    \textbf{Titlul Proiectului: [Numele Bazei Tale de Date]}
+
+    \vfill
+
+    \Large
+    \textbf{Student:} Nume Prenume\\
+    \textbf{Grupa:} [Grupa Ta]\\
+    \textbf{Seria:} [Seria Ta]\\
+    \textbf{Anul Universitar:} 2025-2026
+
+    \vspace{2cm}
+\end{titlepage}
+
+% =========================================================
+% 2. CUPRINS [cite: 30]
+% =========================================================
+\tableofcontents
+\newpage
+
+% =========================================================
+% 3. INTRODUCERE [cite: 31, 32]
+% =========================================================
+\chapter*{Introducere}
+\addcontentsline{toc}{chapter}{Introducere}
+
+\section*{Tema Proiectului}
+[Descrie aici pe scurt ce face aplicația/baza de date.]
+
+\section*{Infrastructura Utilizată}
+\begin{itemize}
+    \item \textbf{SGBD:} Oracle Database [Ex: 19c / 21c Express Edition]
+    \item \textbf{Sistem de Operare:} [Ex: Windows 11 / Linux Ubuntu]
+    \item \textbf{Mediul de lucru:} [Ex: SQL Developer / DataGrip / Mașină Virtuală]
+\end{itemize}
+
+\newpage
+
+% =========================================================
+% CERINȚA 1: Descrierea Bazei de Date [cite: 6]
+% =========================================================
+\chapter{Descrierea Bazei de Date}
+[Prezentați pe scurt baza de date și utilitatea ei. Descrieți scenariul real pe care îl modelează.]
+
+\newpage
+
+% =========================================================
+% CERINȚA 2: Diagrama ERD [cite: 7]
+% =========================================================
+\chapter{Diagrama Entitate-Relație (ERD)}
+Diagrama conține entitățile, relațiile și atributele definite în limba română.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\textwidth]{nume_imagine_erd.png}
+    \caption{Diagrama ERD a bazei de date}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 3: Diagrama Conceptuală [cite: 8]
+% =========================================================
+\chapter{Diagrama Conceptuală}
+Modelul propus integrând toate atributele necesare.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\textwidth]{nume_imagine_conceptuala.png}
+    \caption{Diagrama Conceptuală}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 4: Implementarea (DDL) [cite: 9]
+% =========================================================
+\chapter{Implementarea Structurii (DDL)}
+Mai jos sunt prezentate instrucțiunile de creare a tabelelor și constrângerile de integritate.
+
+\begin{lstlisting}[caption={Crearea tabelelor}]
+-- Exemplu de cod SQL
+CREATE TABLE clienti (
+    id_client NUMBER(5) PRIMARY KEY,
+    nume VARCHAR2(50) NOT NULL,
+    data_nasterii DATE
+);
+
+-- Adauga restul codului DDL aici
+\end{lstlisting}
+
+\textbf{Dovada rulării în Oracle:}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_ddl.png}
+    \caption{Rularea comenzilor CREATE TABLE}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 5: Inserarea Datelor (DML) [cite: 10]
+% =========================================================
+\chapter{Popularea Bazei de Date (DML)}
+Au fost inserate minim 5 înregistrări pentru entitățile independente și 10 pentru cele asociative.
+
+\begin{lstlisting}[caption={Inserarea datelor}]
+INSERT INTO clienti (id_client, nume, data_nasterii)
+VALUES (1, 'Popescu Ion', TO_DATE('1990-05-12', 'YYYY-MM-DD'));
+
+-- Adauga restul insert-urilor aici
+\end{lstlisting}
+
+\textbf{Dovada rulării în Oracle:}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_dml.png}
+    \caption{Rezultatul inserării datelor}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 6: Colecții [cite: 11]
+% =========================================================
+\chapter{Utilizarea Colecțiilor (Tablouri/Vectori)}
+\section*{Enunțul Problemei}
+[Formulați problema în limbaj natural aici...]
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Subprogram cu colecții}]
+CREATE OR REPLACE PROCEDURE demo_colectii IS
+    TYPE t_tablou IS TABLE OF VARCHAR2(100);
+    v_lista t_tablou := t_tablou();
+BEGIN
+    -- Codul tau aici
+    NULL;
+END;
+/
+\end{lstlisting}
+
+\section*{Apel și Rezultat}
+\begin{lstlisting}
+BEGIN
+    demo_colectii;
+END;
+/
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta6.png}
+    \caption{Execuția cerinței 6}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 7: Cursoare [cite: 13]
+% =========================================================
+\chapter{Utilizarea Cursoarelor}
+\section*{Enunțul Problemei}
+[Problema care necesită 2 tipuri de cursoare, unul parametrizat...]
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Subprogram cu cursoare}]
+-- Codul tau aici
+\end{lstlisting}
+
+\section*{Apel și Rezultat}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta7.png}
+    \caption{Execuția cerinței 7}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 8: Funcție [cite: 15, 16]
+% =========================================================
+\chapter{Funcție Stocată}
+\section*{Enunțul Problemei}
+[Funcție care utilizează 3 tabele și tratează excepțiile...]
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Funcția PL/SQL}]
+-- Codul tau aici
+\end{lstlisting}
+
+\section*{Apel și Rezultat (Tratare Excepții)}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta8.png}
+    \caption{Apelul funcției și tratarea excepțiilor}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 9: Procedură [cite: 18, 19]
+% =========================================================
+\chapter{Procedură Stocată}
+\section*{Enunțul Problemei}
+[Procedură cu 5 tabele și excepții proprii...]
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Procedura PL/SQL}]
+-- Codul tau aici
+\end{lstlisting}
+
+\section*{Apel și Rezultat}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta9.png}
+    \caption{Execuția procedurii}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 10: Trigger LMD (Comandă) [cite: 22]
+% =========================================================
+\chapter{Trigger LMD la Nivel de Comandă}
+\section*{Definire Trigger}
+\begin{lstlisting}
+-- Codul trigger-ului
+\end{lstlisting}
+
+\section*{Declanșare}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta10.png}
+    \caption{Demonstrație declanșare trigger}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 11: Trigger LMD (Linie) [cite: 23]
+% =========================================================
+\chapter{Trigger LMD la Nivel de Linie}
+\section*{Definire Trigger}
+\begin{lstlisting}
+-- Codul trigger-ului
+\end{lstlisting}
+
+\section*{Declanșare}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta11.png}
+    \caption{Demonstrație declanșare trigger}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 12: Trigger LDD [cite: 24]
+% =========================================================
+\chapter{Trigger LDD}
+\section*{Definire Trigger}
+\begin{lstlisting}
+-- Codul trigger-ului pentru comenzi de tip CREATE/DROP/ALTER
+\end{lstlisting}
+
+\section*{Declanșare}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta12.png}
+    \caption{Demonstrație declanșare trigger LDD}
+\end{figure}
+
+\newpage
+
+% =========================================================
+% CERINȚA 13: Pachet (Opțional) [cite: 25]
+% =========================================================
+\chapter{Pachet PL/SQL (Opțional)}
+\section*{Specificația Pachetului}
+\begin{lstlisting}
+-- Codul specificatiei
+\end{lstlisting}
+
+\section*{Corpul Pachetului}
+\begin{lstlisting}
+-- Codul body-ului
+\end{lstlisting}
+
+\section*{Apel Funcționalități}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta13.png}
+    \caption{Execuția elementelor din pachet}
+\end{figure}
+
+\end{document}
