@@ -1,6 +1,5 @@
 \documentclass[12pt, a4paper]{report}
 
-% --- Packages ---
 \usepackage[utf8]{inputenc}
 \usepackage[romanian]{babel} % Sets language to Romanian
 \usepackage[margin=2.5cm]{geometry} % Standard margins
@@ -11,8 +10,6 @@
 \usepackage{listings} % For code syntax highlighting
 \usepackage{titlesec} % To format chapter titles
 
-% --- Modern Code Highlighting Setup (SQL/PLSQL) ---
-% Defining colors similar to VS Code / Modern Editors
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
@@ -42,22 +39,32 @@
 
 \lstset{style=modernsql}
 
-% --- Chapter Formatting ---
-% Starts new chapters on a new page automatically
+% --- Terminal Output (monospace, no syntax highlight) ---
+\lstdefinestyle{terminal}{
+    backgroundcolor=\color{backcolour},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    keepspaces=true,
+    numbers=none,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    keywordstyle=\color{black},
+    commentstyle=\color{black},
+    stringstyle=\color{black}
+}
+
 \titleformat{\chapter}[block]
   {\normalfont\huge\bfseries}{\thechapter.}{1em}{\Huge}
 \titlespacing*{\chapter}{0pt}{-30pt}{20pt}
 
-% --- Document Info ---
 \title{Proiect SGBD}
-\author{Numele și Prenumele Tău}
+\author{Robert-Ionuț Voaideș-Negustor}
 \date{2025-2026}
 
 \begin{document}
 
-% =========================================================
-% 1. PAGINA DE TITLU [cite: 29]
-% =========================================================
 \begin{titlepage}
     \centering
     \vspace*{1cm}
@@ -66,119 +73,277 @@
 
     \vspace{0.5cm}
     \LARGE
-    Proiect Semestrial
+    Proiect
 
     \vspace{1.5cm}
-    \textbf{Titlul Proiectului: [Numele Bazei Tale de Date]}
+    \textbf{Sistem de Gestiune a Restaurării Patrimoniului Cultural}
 
     \vfill
 
     \Large
-    \textbf{Student:} Nume Prenume\\
-    \textbf{Grupa:} [Grupa Ta]\\
-    \textbf{Seria:} [Seria Ta]\\
+    \textbf{Student:} Voaideș-Negustor Robert-Ionuț\\
+    \textbf{Grupa:} 251\\
+    \textbf{Seria:} 25\\
     \textbf{Anul Universitar:} 2025-2026
 
     \vspace{2cm}
 \end{titlepage}
 
-% =========================================================
-% 2. CUPRINS [cite: 30]
-% =========================================================
 \tableofcontents
 \newpage
 
-% =========================================================
-% 3. INTRODUCERE [cite: 31, 32]
-% =========================================================
 \chapter*{Introducere}
-\addcontentsline{toc}{chapter}{Introducere}
 
-\section*{Tema Proiectului}
-[Descrie aici pe scurt ce face aplicația/baza de date.]
-
-\section*{Infrastructura Utilizată}
+\section*{Infrastructura utilizata}
 \begin{itemize}
-    \item \textbf{SGBD:} Oracle Database [Ex: 19c / 21c Express Edition]
-    \item \textbf{Sistem de Operare:} [Ex: Windows 11 / Linux Ubuntu]
-    \item \textbf{Mediul de lucru:} [Ex: SQL Developer / DataGrip / Mașină Virtuală]
+    \item \textbf{Sistem de operare:} Fedora Linux
+    \item \textbf{Containerizare:} Docker
+    \item \textbf{SGBD:} Oracle Database XE 21c (container \texttt{oracle-xe}, imagine \texttt{gvenzl/oracle-xe:21-slim})
+    \item \textbf{Mediu de lucru:} Visual Studio Code și DataGrip
+\end{itemize}
+
+\chapter{Descrierea Bazei de Date}
+
+\section{Scenariul Real Modelat}
+Această bază de date a fost proiectată pentru a gestiona activitatea unei instituții sau companii specializate în conservarea și restaurarea patrimoniului istoric. Scenariul real modelat urmărește ciclul de viață complet al unui proiect de restaurare, de la identificarea obiectivului (monumentul) și asigurarea surselor de finanțare, până la execuția efectivă și monitorizarea calității lucrărilor.
+
+Baza de date surprinde interacțiunile complexe dintre diversele entități implicate într-un șantier de restaurare: monumentele istorice, echipele multidisciplinare de experți, resursele materiale necesare, instituțiile statului care avizează lucrările și sursele de finanțare.
+
+\section{Utilitatea Bazei de Date}
+Implementarea acestui sistem informatic răspunde nevoii de a avea o evidență clară, transparentă și centralizată asupra modului în care este conservat patrimoniul. Principalele funcționalități și beneficii sunt:
+
+\begin{itemize}
+    \item \textbf{Trasabilitatea intervențiilor:} Sistemul permite crearea unui istoric detaliat al tuturor restaurărilor efectuate asupra unui monument. Se poate verifica oricând ce materiale s-au utilizat și ce experți au participat, informații vitale pentru viitoarele lucrări de întreținere.
+    \item \textbf{Gestionarea resurselor:} Baza de date rezolvă problema alocării eficiente a resurselor. Deoarece experții și stocurile de materiale pot fi partajate între mai multe șantiere simultan, sistemul evidențiază clar distribuția acestora.
+    \item \textbf{Monitorizarea financiară și legală:} Permite urmărirea bugetelor alocate din diverse surse de finanțare, precum și starea avizelor necesare de la autoritățile competente (ex: Ministerul Culturii, Primărie) și rezultatele inspecțiilor de șantier.
 \end{itemize}
 
 \newpage
 
-% =========================================================
-% CERINȚA 1: Descrierea Bazei de Date [cite: 6]
-% =========================================================
-\chapter{Descrierea Bazei de Date}
-[Prezentați pe scurt baza de date și utilitatea ei. Descrieți scenariul real pe care îl modelează.]
-
-\newpage
-
-% =========================================================
-% CERINȚA 2: Diagrama ERD [cite: 7]
-% =========================================================
 \chapter{Diagrama Entitate-Relație (ERD)}
-Diagrama conține entitățile, relațiile și atributele definite în limba română.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\textwidth]{nume_imagine_erd.png}
+    \includegraphics[width=0.95\textwidth]{imgs/sgbd-er.jpg}
     \caption{Diagrama ERD a bazei de date}
 \end{figure}
 
 \newpage
 
-% =========================================================
-% CERINȚA 3: Diagrama Conceptuală [cite: 8]
-% =========================================================
 \chapter{Diagrama Conceptuală}
-Modelul propus integrând toate atributele necesare.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\textwidth]{nume_imagine_conceptuala.png}
+    \includegraphics[width=0.95\textwidth]{imgs/sgbd-concept.drawio.png}
     \caption{Diagrama Conceptuală}
 \end{figure}
 
 \newpage
 
-% =========================================================
-% CERINȚA 4: Implementarea (DDL) [cite: 9]
-% =========================================================
-\chapter{Implementarea Structurii (DDL)}
+\chapter{Implementarea Structurii}
 Mai jos sunt prezentate instrucțiunile de creare a tabelelor și constrângerile de integritate.
 
 \begin{lstlisting}[caption={Crearea tabelelor}]
--- Exemplu de cod SQL
-CREATE TABLE clienti (
-    id_client NUMBER(5) PRIMARY KEY,
-    nume VARCHAR2(50) NOT NULL,
-    data_nasterii DATE
+CREATE TABLE monument (
+    id_monument NUMBER(5) CONSTRAINT pk_monument PRIMARY KEY,
+    denumire    VARCHAR2(100) NOT NULL,
+    locatie     VARCHAR2(100) NOT NULL
 );
 
--- Adauga restul codului DDL aici
+
+CREATE TABLE expert (
+    id_expert    NUMBER(5) CONSTRAINT pk_expert PRIMARY KEY,
+    nume         VARCHAR2(50) NOT NULL,
+    specializare VARCHAR2(50) NOT NULL,
+    email        VARCHAR2(100) CONSTRAINT uq_expert_email UNIQUE
+);
+
+
+CREATE TABLE material (
+    id_material NUMBER(5) CONSTRAINT pk_material PRIMARY KEY,
+    denumire    VARCHAR2(50) NOT NULL,
+    clasa       VARCHAR2(20),
+    risc        VARCHAR2(20)
+);
+
+
+CREATE TABLE finantare (
+    id_finantare NUMBER(5) CONSTRAINT pk_finantare PRIMARY KEY,
+    sursa        VARCHAR2(50) NOT NULL,
+    buget        NUMBER(12, 2) CONSTRAINT ck_buget_pozitiv CHECK (buget > 0)
+);
+
+
+CREATE TABLE autoritate (
+    id_autoritate NUMBER(5) CONSTRAINT pk_autoritate PRIMARY KEY,
+    nume          VARCHAR2(100) NOT NULL,
+    tip           VARCHAR2(50),
+    atributie     VARCHAR2(100)
+);
+
+CREATE TABLE restaurare (
+    id_restaurare NUMBER(5) CONSTRAINT pk_restaurare PRIMARY KEY,
+    id_monument   NUMBER(5) NOT NULL,
+    data_start    DATE DEFAULT SYSDATE,
+    data_final    DATE,
+    stadiu        VARCHAR2(20) CONSTRAINT ck_stadiu CHECK (stadiu IN ('Planificat', 'In executie', 'Finalizat', 'Suspendat')),
+    CONSTRAINT fk_restaurare_monument FOREIGN KEY (id_monument) REFERENCES monument(id_monument),
+    CONSTRAINT ck_date_valide CHECK (data_final >= data_start)
+);
+
+
+CREATE TABLE aviz (
+    id_aviz       NUMBER(5) CONSTRAINT pk_aviz PRIMARY KEY,
+    id_restaurare NUMBER(5) NOT NULL,
+    id_autoritate NUMBER(5) NOT NULL,
+    tip_aviz      VARCHAR2(50) NOT NULL,
+    data_aviz     DATE DEFAULT SYSDATE,
+    CONSTRAINT fk_aviz_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare),
+    CONSTRAINT fk_aviz_autoritate FOREIGN KEY (id_autoritate) REFERENCES autoritate(id_autoritate)
+);
+
+
+CREATE TABLE inspectie (
+    id_inspectie   NUMBER(5) CONSTRAINT pk_inspectie PRIMARY KEY,
+    id_restaurare  NUMBER(5) NOT NULL,
+    data_inspectie DATE DEFAULT SYSDATE,
+    rezultat       VARCHAR2(200),
+    CONSTRAINT fk_inspectie_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
+
+CREATE TABLE expert_restaurare (
+    id_expert     NUMBER(5),
+    id_restaurare NUMBER(5),
+    CONSTRAINT pk_expert_restaurare PRIMARY KEY (id_expert, id_restaurare),
+    CONSTRAINT fk_er_expert FOREIGN KEY (id_expert) REFERENCES expert(id_expert),
+    CONSTRAINT fk_er_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
+
+CREATE TABLE material_restaurare (
+    id_material   NUMBER(5),
+    id_restaurare NUMBER(5),
+    CONSTRAINT pk_material_restaurare PRIMARY KEY (id_material, id_restaurare),
+    CONSTRAINT fk_mr_material FOREIGN KEY (id_material) REFERENCES material(id_material),
+    CONSTRAINT fk_mr_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
+
+CREATE TABLE finantare_restaurare (
+    id_finantare  NUMBER(5),
+    id_restaurare NUMBER(5),
+    CONSTRAINT pk_finantare_restaurare PRIMARY KEY (id_finantare, id_restaurare),
+    CONSTRAINT fk_fr_finantare FOREIGN KEY (id_finantare) REFERENCES finantare(id_finantare),
+    CONSTRAINT fk_fr_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
 \end{lstlisting}
+
+\newpage
 
 \textbf{Dovada rulării în Oracle:}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_ddl.png}
+    \includegraphics[width=0.3\textwidth]{imgs/sgbd001.png}
     \caption{Rularea comenzilor CREATE TABLE}
 \end{figure}
 
 \newpage
 
-% =========================================================
-% CERINȚA 5: Inserarea Datelor (DML) [cite: 10]
-% =========================================================
-\chapter{Popularea Bazei de Date (DML)}
+\chapter{Popularea Bazei de Date}
 Au fost inserate minim 5 înregistrări pentru entitățile independente și 10 pentru cele asociative.
 
 \begin{lstlisting}[caption={Inserarea datelor}]
-INSERT INTO clienti (id_client, nume, data_nasterii)
-VALUES (1, 'Popescu Ion', TO_DATE('1990-05-12', 'YYYY-MM-DD'));
+INSERT INTO monument VALUES (1, 'Castelul Peles', 'Sinaia');
+INSERT INTO monument VALUES (2, 'Biserica Neagra', 'Brasov');
+INSERT INTO monument VALUES (3, 'Cetatea de Scaun', 'Suceava');
+INSERT INTO monument VALUES (4, 'Manastirea Voronet', 'Gura Humorului');
+INSERT INTO monument VALUES (5, 'Cazinoul', 'Constanta');
 
--- Adauga restul insert-urilor aici
+
+INSERT INTO expert VALUES (101, 'Popescu Ion', 'Arhitect', 'popescu.i@expert.ro');
+INSERT INTO expert VALUES (102, 'Ionescu Maria', 'Inginer Structurist', 'maria.i@expert.ro');
+INSERT INTO expert VALUES (103, 'Georgescu Vlad', 'Restaurator Pictura', 'vlad.g@expert.ro');
+INSERT INTO expert VALUES (104, 'Dumitru Ana', 'Arheolog', 'ana.d@expert.ro');
+INSERT INTO expert VALUES (105, 'Stanescu Dan', 'Manager Proiect', 'dan.s@expert.ro');
+
+
+INSERT INTO material VALUES (201, 'Piatra de rau', 'Natural', 'Scazut');
+INSERT INTO material VALUES (202, 'Mortar hidraulic', 'Sintetic', 'Mediu');
+INSERT INTO material VALUES (203, 'Lemn de stejar tratat', 'Natural', 'Ridicat');
+INSERT INTO material VALUES (204, 'Pigment mineral', 'Chimic', 'Mediu');
+INSERT INTO material VALUES (205, 'Caramida arsa', 'Compozit', 'Scazut');
+
+
+INSERT INTO finantare VALUES (301, 'Ministerul Culturii', 5000000);
+INSERT INTO finantare VALUES (302, 'Fonduri Europene REGIO', 12000000);
+INSERT INTO finantare VALUES (303, 'Buget Local Sinaia', 200000);
+INSERT INTO finantare VALUES (304, 'Donatii Private ONG', 50000);
+INSERT INTO finantare VALUES (305, 'Granturi Norvegiene', 3500000);
+
+
+INSERT INTO autoritate VALUES (401, 'Ministerul Culturii', 'Guvernamental', 'Avizare patrimoniu');
+INSERT INTO autoritate VALUES (402, 'Primaria Sinaia', 'Local', 'Certificat Urbanism');
+INSERT INTO autoritate VALUES (403, 'ISC Brasov', 'Inspectie', 'Control Calitate');
+INSERT INTO autoritate VALUES (404, 'Directia Judeteana Cultura', 'Judetean', 'Monitorizare');
+INSERT INTO autoritate VALUES (405, 'Primaria Constanta', 'Local', 'Autorizatie Constructie');
+
+
+INSERT INTO restaurare VALUES (1001, 1, TO_DATE('01-03-2024','DD-MM-YYYY'), TO_DATE('01-12-2025','DD-MM-YYYY'), 'In executie');
+INSERT INTO restaurare VALUES (1002, 2, TO_DATE('15-05-2023','DD-MM-YYYY'), TO_DATE('15-05-2024','DD-MM-YYYY'), 'Finalizat');
+INSERT INTO restaurare VALUES (1003, 5, TO_DATE('01-01-2020','DD-MM-YYYY'), TO_DATE('01-01-2026','DD-MM-YYYY'), 'In executie');
+INSERT INTO restaurare VALUES (1004, 3, TO_DATE('10-10-2025','DD-MM-YYYY'), NULL, 'Planificat');
+INSERT INTO restaurare VALUES (1005, 4, TO_DATE('01-06-2024','DD-MM-YYYY'), TO_DATE('01-09-2024','DD-MM-YYYY'), 'Suspendat');
+
+
+INSERT INTO aviz VALUES (1, 1001, 401, 'Aviz Favorabil', TO_DATE('20-02-2024','DD-MM-YYYY'));
+INSERT INTO aviz VALUES (2, 1001, 402, 'Autorizatie Constructie', TO_DATE('25-02-2024','DD-MM-YYYY'));
+INSERT INTO aviz VALUES (3, 1003, 405, 'Prelungire Autorizatie', TO_DATE('10-01-2024','DD-MM-YYYY'));
+
+
+INSERT INTO inspectie VALUES (1, 1001, TO_DATE('01-04-2024','DD-MM-YYYY'), 'Conform cu proiectul');
+INSERT INTO inspectie VALUES (2, 1003, TO_DATE('15-04-2024','DD-MM-YYYY'), 'Degradari neprevazute la fatada');
+
+
+INSERT INTO expert_restaurare VALUES (101, 1001);
+INSERT INTO expert_restaurare VALUES (102, 1001);
+INSERT INTO expert_restaurare VALUES (105, 1001);
+INSERT INTO expert_restaurare VALUES (101, 1003);
+INSERT INTO expert_restaurare VALUES (102, 1003);
+INSERT INTO expert_restaurare VALUES (103, 1005);
+INSERT INTO expert_restaurare VALUES (104, 1004);
+INSERT INTO expert_restaurare VALUES (105, 1002);
+INSERT INTO expert_restaurare VALUES (102, 1002);
+INSERT INTO expert_restaurare VALUES (101, 1002);
+
+
+INSERT INTO material_restaurare VALUES (203, 1001);
+INSERT INTO material_restaurare VALUES (205, 1001);
+INSERT INTO material_restaurare VALUES (201, 1002);
+INSERT INTO material_restaurare VALUES (202, 1002);
+INSERT INTO material_restaurare VALUES (201, 1003);
+INSERT INTO material_restaurare VALUES (202, 1003);
+INSERT INTO material_restaurare VALUES (204, 1003);
+INSERT INTO material_restaurare VALUES (201, 1004);
+INSERT INTO material_restaurare VALUES (204, 1005);
+INSERT INTO material_restaurare VALUES (202, 1005);
+
+
+INSERT INTO finantare_restaurare VALUES (301, 1001);
+INSERT INTO finantare_restaurare VALUES (303, 1001);
+INSERT INTO finantare_restaurare VALUES (304, 1002);
+INSERT INTO finantare_restaurare VALUES (305, 1002);
+INSERT INTO finantare_restaurare VALUES (302, 1003);
+INSERT INTO finantare_restaurare VALUES (301, 1003);
+INSERT INTO finantare_restaurare VALUES (305, 1003);
+INSERT INTO finantare_restaurare VALUES (302, 1004);
+INSERT INTO finantare_restaurare VALUES (301, 1005);
+INSERT INTO finantare_restaurare VALUES (304, 1005);
+
+
+COMMIT;
+
 \end{lstlisting}
 
 \textbf{Dovada rulării în Oracle:}
@@ -190,9 +355,6 @@ VALUES (1, 'Popescu Ion', TO_DATE('1990-05-12', 'YYYY-MM-DD'));
 
 \newpage
 
-% =========================================================
-% CERINȚA 6: Colecții [cite: 11]
-% =========================================================
 \chapter{Utilizarea Colecțiilor (Tablouri/Vectori)}
 \section*{Enunțul Problemei}
 [Formulați problema în limbaj natural aici...]
@@ -225,9 +387,6 @@ END;
 
 \newpage
 
-% =========================================================
-% CERINȚA 7: Cursoare [cite: 13]
-% =========================================================
 \chapter{Utilizarea Cursoarelor}
 \section*{Enunțul Problemei}
 [Problema care necesită 2 tipuri de cursoare, unul parametrizat...]
@@ -246,9 +405,6 @@ END;
 
 \newpage
 
-% =========================================================
-% CERINȚA 8: Funcție [cite: 15, 16]
-% =========================================================
 \chapter{Funcție Stocată}
 \section*{Enunțul Problemei}
 [Funcție care utilizează 3 tabele și tratează excepțiile...]
@@ -267,9 +423,6 @@ END;
 
 \newpage
 
-% =========================================================
-% CERINȚA 9: Procedură [cite: 18, 19]
-% =========================================================
 \chapter{Procedură Stocată}
 \section*{Enunțul Problemei}
 [Procedură cu 5 tabele și excepții proprii...]
@@ -288,9 +441,6 @@ END;
 
 \newpage
 
-% =========================================================
-% CERINȚA 10: Trigger LMD (Comandă) [cite: 22]
-% =========================================================
 \chapter{Trigger LMD la Nivel de Comandă}
 \section*{Definire Trigger}
 \begin{lstlisting}
@@ -306,9 +456,6 @@ END;
 
 \newpage
 
-% =========================================================
-% CERINȚA 11: Trigger LMD (Linie) [cite: 23]
-% =========================================================
 \chapter{Trigger LMD la Nivel de Linie}
 \section*{Definire Trigger}
 \begin{lstlisting}
@@ -324,9 +471,6 @@ END;
 
 \newpage
 
-% =========================================================
-% CERINȚA 12: Trigger LDD [cite: 24]
-% =========================================================
 \chapter{Trigger LDD}
 \section*{Definire Trigger}
 \begin{lstlisting}
@@ -336,15 +480,14 @@ END;
 \section*{Declanșare}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta12.png}
+    % \in% =========================================================
+% 3. INTRODUCERE [cite: 31, 32]
+% =========================================================cludegraphics[width=0.8\textwidth]{screenshot_cerinta12.png}
     \caption{Demonstrație declanșare trigger LDD}
 \end{figure}
 
 \newpage
 
-% =========================================================
-% CERINȚA 13: Pachet (Opțional) [cite: 25]
-% =========================================================
 \chapter{Pachet PL/SQL (Opțional)}
 \section*{Specificația Pachetului}
 \begin{lstlisting}
