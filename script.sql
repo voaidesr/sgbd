@@ -117,13 +117,11 @@ INSERT INTO monument VALUES (3, 'Cetatea de Scaun', 'Suceava');
 INSERT INTO monument VALUES (4, 'Manastirea Voronet', 'Gura Humorului');
 INSERT INTO monument VALUES (5, 'Cazinoul', 'Constanta');
 
-
 INSERT INTO expert VALUES (101, 'Popescu Ion', 'Arhitect', 'popescu.i@expert.ro');
 INSERT INTO expert VALUES (102, 'Ionescu Maria', 'Inginer Structurist', 'maria.i@expert.ro');
 INSERT INTO expert VALUES (103, 'Georgescu Vlad', 'Restaurator Pictura', 'vlad.g@expert.ro');
 INSERT INTO expert VALUES (104, 'Dumitru Ana', 'Arheolog', 'ana.d@expert.ro');
 INSERT INTO expert VALUES (105, 'Stanescu Dan', 'Manager Proiect', 'dan.s@expert.ro');
-
 
 INSERT INTO material VALUES (201, 'Piatra de rau', 'Natural', 'Scazut');
 INSERT INTO material VALUES (202, 'Mortar hidraulic', 'Sintetic', 'Mediu');
@@ -131,13 +129,11 @@ INSERT INTO material VALUES (203, 'Lemn de stejar tratat', 'Natural', 'Ridicat')
 INSERT INTO material VALUES (204, 'Pigment mineral', 'Chimic', 'Mediu');
 INSERT INTO material VALUES (205, 'Caramida arsa', 'Compozit', 'Scazut');
 
-
 INSERT INTO finantare VALUES (301, 'Ministerul Culturii', 5000000);
 INSERT INTO finantare VALUES (302, 'Fonduri Europene REGIO', 12000000);
 INSERT INTO finantare VALUES (303, 'Buget Local Sinaia', 200000);
 INSERT INTO finantare VALUES (304, 'Donatii Private ONG', 50000);
 INSERT INTO finantare VALUES (305, 'Granturi Norvegiene', 3500000);
-
 
 INSERT INTO autoritate VALUES (401, 'Ministerul Culturii', 'Guvernamental', 'Avizare patrimoniu');
 INSERT INTO autoritate VALUES (402, 'Primaria Sinaia', 'Local', 'Certificat Urbanism');
@@ -145,14 +141,11 @@ INSERT INTO autoritate VALUES (403, 'ISC Brasov', 'Inspectie', 'Control Calitate
 INSERT INTO autoritate VALUES (404, 'Directia Judeteana Cultura', 'Judetean', 'Monitorizare');
 INSERT INTO autoritate VALUES (405, 'Primaria Constanta', 'Local', 'Autorizatie Constructie');
 
-
-
 INSERT INTO restaurare VALUES (1001, 1, TO_DATE('01-03-2024','DD-MM-YYYY'), TO_DATE('01-12-2025','DD-MM-YYYY'), 'In executie');
 INSERT INTO restaurare VALUES (1002, 2, TO_DATE('15-05-2023','DD-MM-YYYY'), TO_DATE('15-05-2024','DD-MM-YYYY'), 'Finalizat');
 INSERT INTO restaurare VALUES (1003, 5, TO_DATE('01-01-2020','DD-MM-YYYY'), TO_DATE('01-01-2026','DD-MM-YYYY'), 'In executie');
 INSERT INTO restaurare VALUES (1004, 3, TO_DATE('10-10-2025','DD-MM-YYYY'), NULL, 'Planificat');
 INSERT INTO restaurare VALUES (1005, 4, TO_DATE('01-06-2024','DD-MM-YYYY'), TO_DATE('01-09-2024','DD-MM-YYYY'), 'Suspendat');
-
 
 INSERT INTO aviz VALUES (1, 1001, 401, 'Aviz Favorabil', TO_DATE('20-02-2024','DD-MM-YYYY'));
 INSERT INTO aviz VALUES (2, 1001, 402, 'Autorizatie Constructie', TO_DATE('25-02-2024','DD-MM-YYYY'));
@@ -161,9 +154,9 @@ INSERT INTO aviz VALUES (3, 1003, 405, 'Prelungire Autorizatie', TO_DATE('10-01-
 
 INSERT INTO inspectie VALUES (1, 1001, TO_DATE('01-04-2024','DD-MM-YYYY'), 'Conform cu proiectul');
 INSERT INTO inspectie VALUES (2, 1003, TO_DATE('15-04-2024','DD-MM-YYYY'), 'Degradari neprevazute la fatada');
-
-
-
+INSERT INTO inspectie VALUES (3, 1002, TO_DATE('20-03-2024','DD-MM-YYYY'), 'Inspectie finala, lucrari conforme');
+INSERT INTO inspectie VALUES (4, 1004, TO_DATE('12-11-2025','DD-MM-YYYY'), 'Verificare preliminara a santierului');
+INSERT INTO inspectie VALUES (5, 1005, TO_DATE('25-07-2024','DD-MM-YYYY'), 'Necesita remedieri la acoperis');
 
 INSERT INTO expert_restaurare VALUES (101, 1001);
 INSERT INTO expert_restaurare VALUES (102, 1001);
@@ -176,7 +169,6 @@ INSERT INTO expert_restaurare VALUES (105, 1002);
 INSERT INTO expert_restaurare VALUES (102, 1002);
 INSERT INTO expert_restaurare VALUES (101, 1002);
 
-
 INSERT INTO material_restaurare VALUES (203, 1001);
 INSERT INTO material_restaurare VALUES (205, 1001);
 INSERT INTO material_restaurare VALUES (201, 1002);
@@ -187,7 +179,6 @@ INSERT INTO material_restaurare VALUES (204, 1003);
 INSERT INTO material_restaurare VALUES (201, 1004);
 INSERT INTO material_restaurare VALUES (204, 1005);
 INSERT INTO material_restaurare VALUES (202, 1005);
-
 
 INSERT INTO finantare_restaurare VALUES (301, 1001);
 INSERT INTO finantare_restaurare VALUES (303, 1001);
@@ -200,7 +191,6 @@ INSERT INTO finantare_restaurare VALUES (302, 1004);
 INSERT INTO finantare_restaurare VALUES (301, 1005);
 INSERT INTO finantare_restaurare VALUES (304, 1005);
 
-
 COMMIT;
 
 -- 6.
@@ -208,32 +198,28 @@ COMMIT;
 CREATE OR REPLACE PROCEDURE analiza_complexa_proiect (
     p_id_restaurare IN restaurare.id_restaurare%TYPE
 ) IS
-    -- 1. Definiție VARRAY (Dimensiune fixă, max 5 elemente)
+
     TYPE t_materiale_va IS VARRAY(5) OF VARCHAR2(50);
     v_lista_materiale t_materiale_va;
 
-    -- 2. Definiție NESTED TABLE (Dimensiune dinamică)
     TYPE t_experti_nt IS TABLE OF VARCHAR2(50);
-    v_lista_experti t_experti_nt := t_experti_nt(); -- Trebuie inițializat constructorul
+    v_lista_experti t_experti_nt := t_experti_nt();
 
-    -- 3. Definiție ASSOCIATIVE ARRAY (Tablou indexat)
     TYPE t_bonusuri_aa IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
     v_map_bonusuri t_bonusuri_aa;
 
     v_id_expert expert.id_expert%TYPE;
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('--- Analiza Proiectului ID: ' || p_id_restaurare || ' ---');
+    DBMS_OUTPUT.PUT_LINE('Analiza Proiectului ID: ' || p_id_restaurare);
 
-    -- A. Populare VARRAY (Maxim 5 materiale)
     SELECT m.denumire
     BULK COLLECT INTO v_lista_materiale
     FROM material m
     JOIN material_restaurare mr ON m.id_material = mr.id_material
     WHERE mr.id_restaurare = p_id_restaurare
-    AND ROWNUM <= 5; -- Limităm la capacitatea Varray-ului
+    AND ROWNUM <= 5;
 
-    -- Afișare Varray
     DBMS_OUTPUT.PUT_LINE('> Materiale principale (Varray):');
     IF v_lista_materiale.COUNT > 0 THEN
         FOR i IN 1..v_lista_materiale.COUNT LOOP
@@ -243,23 +229,19 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('  Niciun material găsit.');
     END IF;
 
-    -- B. Populare NESTED TABLE + ASSOCIATIVE ARRAY
-    -- Iterăm prin cursor pentru a popula ambele colecții
     FOR r IN (
         SELECT e.id_expert, e.nume
         FROM expert e
         JOIN expert_restaurare er ON e.id_expert = er.id_expert
         WHERE er.id_restaurare = p_id_restaurare
     ) LOOP
-        -- Adăugăm în Nested Table
+
         v_lista_experti.EXTEND;
         v_lista_experti(v_lista_experti.LAST) := r.nume;
 
-        -- Adăugăm în Associative Array (Key: ID Expert, Value: Bonus fix 1500)
         v_map_bonusuri(r.id_expert) := 1500;
     END LOOP;
 
-    -- Afișare Nested Table
     DBMS_OUTPUT.PUT_LINE('> Lista Experți (Nested Table):');
     IF v_lista_experti.COUNT > 0 THEN
         FOR i IN 1..v_lista_experti.COUNT LOOP
@@ -269,7 +251,6 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('  Niciun expert alocat.');
     END IF;
 
-    -- Afișare Associative Array (Iterare prin chei - ID-uri)
     DBMS_OUTPUT.PUT_LINE('> Calcul Bonusuri (Associative Array):');
     v_id_expert := v_map_bonusuri.FIRST;
     WHILE v_id_expert IS NOT NULL LOOP
@@ -285,11 +266,66 @@ EXCEPTION
 END;
 /
 
--- apel
+
 
 SET SERVEROUTPUT ON;
 BEGIN
-    -- Apelam pentru proiectul 1001 (Castelul Peles) care are date in insert-urile anterioare
     analiza_complexa_proiect(1002);
 END;
 /
+
+
+-- 7
+
+CREATE OR REPLACE PROCEDURE raport_financiar_locatie (
+    p_locatie IN monument.locatie%TYPE
+) IS
+    CURSOR c_monumente IS
+        SELECT id_monument, denumire
+        FROM monument
+        WHERE UPPER(locatie) = UPPER(p_locatie);
+
+    CURSOR c_finantari (p_id_mon NUMBER) IS
+        SELECT f.sursa, f.buget, r.stadiu
+        FROM finantare f
+        JOIN finantare_restaurare fr ON f.id_finantare = fr.id_finantare
+        JOIN restaurare r ON fr.id_restaurare = r.id_restaurare
+        WHERE r.id_monument = p_id_mon;
+
+    v_total_monument NUMBER;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Raport Financiar pentru: ' || p_locatie);
+
+    FOR r_mon IN c_monumente LOOP
+        DBMS_OUTPUT.PUT_LINE('Monument: ' || r_mon.denumire || ' (ID: ' || r_mon.id_monument || ')');
+
+        v_total_monument := 0;
+
+        FOR r_fin IN c_finantari(r_mon.id_monument) LOOP
+            DBMS_OUTPUT.PUT_LINE('   > Sursa: ' || r_fin.sursa ||
+                                 ' | Buget: ' || r_fin.buget ||
+                                 ' | Stadiu: ' || r_fin.stadiu);
+            v_total_monument := v_total_monument + r_fin.buget;
+        END LOOP;
+
+        IF v_total_monument = 0 THEN
+             DBMS_OUTPUT.PUT_LINE('   > Nu exista finantari inregistrate.');
+        ELSE
+             DBMS_OUTPUT.PUT_LINE('   > TOTAL MONUMENT: ' || v_total_monument || ' RON');
+        END IF;
+
+    END LOOP;
+END;
+/
+
+SET SERVEROUTPUT ON;
+BEGIN
+    raport_financiar_locatie('Sinaia');
+
+    DBMS_OUTPUT.PUT_LINE('');
+
+    raport_financiar_locatie('Constanta');
+END;
+/
+
