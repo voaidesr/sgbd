@@ -365,3 +365,76 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(get_material_unic(9999));
 END;
 /
+
+-- 9.
+
+CREATE OR REPLACE PROCEDURE audit_complex_monument (
+    p_id_monument IN NUMBER,
+    p_prag_financiar IN NUMBER
+) IS
+    v_total_buget NUMBER;
+    v_nr_experti NUMBER;
+
+    exc_fonduri_insuficiente EXCEPTION;
+    exc_expertiza_limitata EXCEPTION;
+BEGIN
+    SELECT SUM(f.buget), COUNT(DISTINCT er.id_expert)
+    INTO v_total_buget, v_nr_experti
+    FROM monument m
+    JOIN restaurare r ON m.id_monument = r.id_monument
+    JOIN finantare_restaurare fr ON r.id_restaurare = fr.id_restaurare
+    JOIN finantare f ON fr.id_finantare = f.id_finantare
+    JOIN expert_restaurare er ON r.id_restaurare = er.id_restaurare
+    WHERE m.id_monument = p_id_monument
+    GROUP BY m.id_monument;
+
+    IF v_total_buget < p_prag_financiar THEN
+        RAISE exc_fonduri_insuficiente;
+    END IF;
+
+    IF v_nr_experti < 2 THEN
+        RAISE exc_expertiza_limitata;
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('Audit trecut cu succes. Buget: ' || v_total_buget || ' RON, Experti: ' || v_nr_experti);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: Monumentul nu are restaurari active, finantari sau experti alocati.');
+    WHEN exc_fonduri_insuficiente THEN
+        DBMS_OUTPUT.PUT_LINE('Alerta: Fonduri sub pragul minim (' || v_total_buget || ' < ' || p_prag_financiar || ').');
+    WHEN exc_expertiza_limitata THEN
+        DBMS_OUTPUT.PUT_LINE('Alerta: Echipa tehnica insuficienta (' || v_nr_experti || ' experti).');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare necunoscuta: ' || SQLERRM);
+END;
+/
+
+SET SERVEROUTPUT ON;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(' CAZ 1: Succes (Castelul Peles, Buget mic cerut) ');
+    audit_complex_monument(1, 1000);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 2: Excepție Proprie 1 - Fonduri Insuficiente ');
+    audit_complex_monument(1, 999999999);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 3: Excepție Proprie 2 - Expertiza Limitata (Voronet) ');
+    audit_complex_monument(4, 100);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 4: Excepție Sistem - NO_DATA_FOUND ');
+    audit_complex_monument(99, 1000);
+END;
+/
+
+-- 10.
+
+CREATE OR REPLACE TRIGGER trg_stop_stergere_monument
+BEFORE DELETE ON monument
+BEGIN
+    RAISE_APPLICATION_ERROR(-20005, 'Securitate: Stergerea inregistrarilor din tabela MONUMENT este interzisa!');
+END;
+/
+
+-- declansare trigger
+DELETE FROM monument WHERE id_monument = 1;

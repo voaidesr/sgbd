@@ -581,32 +581,104 @@ END;
 
 \chapter{Procedură Stocată}
 \section*{Enunțul Problemei}
-[Procedură cu 5 tabele și excepții proprii...]
+Să se scrie o procedură stocată numită \texttt{audit\_complex\_monument} care primește doi parametri: ID-ul unui monument și un prag minim financiar. Procedura va calcula bugetul total alocat și numărul de experți implicați în restaurările acelui monument, utilizând o singură interogare ce unește 5 tabele (\texttt{MONUMENT}, \texttt{RESTAURARE}, \texttt{FINANTARE\_RESTAURARE}, \texttt{FINANTARE}, \texttt{EXPERT\_RESTAURARE}). Să se definească și să se trateze două excepții proprii:
+
+\texttt{exc\_fonduri\_insuficiente}: Se declanșează dacă bugetul total este sub pragul minim furnizat ca parametru.
+
+\texttt{exc\_expertiza\_limitata}: Se declanșează dacă la proiect participă mai puțin de 2 experți. De asemenea, să se trateze excepția de sistem \texttt{NO\_DATA\_FOUND}.
 
 \section*{Rezolvare PL/SQL}
 \begin{lstlisting}[caption={Procedura PL/SQL}]
--- Codul tau aici
+CREATE OR REPLACE PROCEDURE audit_complex_monument (
+    p_id_monument IN NUMBER,
+    p_prag_financiar IN NUMBER
+) IS
+    v_total_buget NUMBER;
+    v_nr_experti NUMBER;
+
+    exc_fonduri_insuficiente EXCEPTION;
+    exc_expertiza_limitata EXCEPTION;
+BEGIN
+    SELECT SUM(f.buget), COUNT(DISTINCT er.id_expert)
+    INTO v_total_buget, v_nr_experti
+    FROM monument m
+    JOIN restaurare r ON m.id_monument = r.id_monument
+    JOIN finantare_restaurare fr ON r.id_restaurare = fr.id_restaurare
+    JOIN finantare f ON fr.id_finantare = f.id_finantare
+    JOIN expert_restaurare er ON r.id_restaurare = er.id_restaurare
+    WHERE m.id_monument = p_id_monument
+    GROUP BY m.id_monument;
+
+    IF v_total_buget < p_prag_financiar THEN
+        RAISE exc_fonduri_insuficiente;
+    END IF;
+
+    IF v_nr_experti < 2 THEN
+        RAISE exc_expertiza_limitata;
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('Audit trecut cu succes. Buget: ' || v_total_buget || ' RON, Experti: ' || v_nr_experti);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: Monumentul nu are restaurari active, finantari sau experti alocati.');
+    WHEN exc_fonduri_insuficiente THEN
+        DBMS_OUTPUT.PUT_LINE('Alerta: Fonduri sub pragul minim (' || v_total_buget || ' < ' || p_prag_financiar || ').');
+    WHEN exc_expertiza_limitata THEN
+        DBMS_OUTPUT.PUT_LINE('Alerta: Echipa tehnica insuficienta (' || v_nr_experti || ' experti).');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare necunoscuta: ' || SQLERRM);
+END;
+/
 \end{lstlisting}
 
 \section*{Apel și Rezultat}
+\begin{lstlisting}
+SET SERVEROUTPUT ON;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(' CAZ 1: Succes (Castelul Peles, Buget mic cerut) ');
+    audit_complex_monument(1, 1000);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 2: Exceptie Proprie 1 - Fonduri Insuficiente ');
+    audit_complex_monument(1, 999999999);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 3: Exceptie Proprie 2 - Expertiza Limitata (Voronet) ');
+    audit_complex_monument(4, 100);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 4: Exceptie Sistem - NO_DATA_FOUND ');
+    audit_complex_monument(99, 1000);
+END;
+/
+\end{lstlisting}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta9.png}
+    \includegraphics[width=0.8\textwidth]{imgs/sgbd007.png}
     \caption{Execuția procedurii}
 \end{figure}
 
 \newpage
 
 \chapter{Trigger LMD la Nivel de Comandă}
+\section*{Enunțul Problemei}
+Trigger LMD la nivel de comandă (statement-level) care securizează tabela \texttt{MONUMENT}. Trigger-ul se declanșează înainte de orice instrucțiune \texttt{DELETE} și oprește execuția, afișând un mesaj de eroare personalizat, deoarece ștergerea monumentelor istorice din baza de date este strict interzisă prin politica instituției.
+
 \section*{Definire Trigger}
 \begin{lstlisting}
--- Codul trigger-ului
+CREATE OR REPLACE TRIGGER trg_stop_stergere_monument
+BEFORE DELETE ON monument
+BEGIN
+    RAISE_APPLICATION_ERROR(-20005, 'Securitate: Stergerea inregistrarilor din tabela MONUMENT este interzisa!');
+END;
+/
 \end{lstlisting}
 
 \section*{Declanșare}
+\begin{lstlisting}
+DELETE FROM monument WHERE id_monument = 1;
+\end{lstlisting}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta10.png}
+    \includegraphics[width=1\textwidth]{imgs/sgbd008.png}
     \caption{Demonstrație declanșare trigger}
 \end{figure}
 
@@ -636,9 +708,7 @@ END;
 \section*{Declanșare}
 \begin{figure}[H]
     \centering
-    % \in% =========================================================
-% 3. INTRODUCERE [cite: 31, 32]
-% =========================================================cludegraphics[width=0.8\textwidth]{screenshot_cerinta12.png}
+    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta12.png}
     \caption{Demonstrație declanșare trigger LDD}
 \end{figure}
 
