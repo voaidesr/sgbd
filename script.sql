@@ -242,7 +242,7 @@ BEGIN
         v_map_bonusuri(r.id_expert) := 1500;
     END LOOP;
 
-    DBMS_OUTPUT.PUT_LINE('> Lista Experți (Nested Table):');
+    DBMS_OUTPUT.PUT_LINE('> Lista Experti:');
     IF v_lista_experti.COUNT > 0 THEN
         FOR i IN 1..v_lista_experti.COUNT LOOP
             DBMS_OUTPUT.PUT_LINE('  - ' || v_lista_experti(i));
@@ -251,7 +251,7 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('  Niciun expert alocat.');
     END IF;
 
-    DBMS_OUTPUT.PUT_LINE('> Calcul Bonusuri (Associative Array):');
+    DBMS_OUTPUT.PUT_LINE('> Calcul Bonusuri:');
     v_id_expert := v_map_bonusuri.FIRST;
     WHILE v_id_expert IS NOT NULL LOOP
         DBMS_OUTPUT.PUT_LINE('  Expert ID ' || v_id_expert || ' primeste bonus: ' || v_map_bonusuri(v_id_expert) || ' RON');
@@ -322,10 +322,46 @@ END;
 SET SERVEROUTPUT ON;
 BEGIN
     raport_financiar_locatie('Sinaia');
-
     DBMS_OUTPUT.PUT_LINE('');
-
     raport_financiar_locatie('Constanta');
 END;
 /
 
+-- 8
+
+CREATE OR REPLACE FUNCTION get_material_unic(p_id_restaurare NUMBER)
+RETURN VARCHAR2 IS
+    v_denumire_material VARCHAR2(50);
+BEGIN
+    SELECT m.denumire
+    INTO v_denumire_material
+    FROM material m
+    JOIN material_restaurare mr ON m.id_material = mr.id_material
+    JOIN restaurare r ON mr.id_restaurare = r.id_restaurare
+    WHERE r.id_restaurare = p_id_restaurare;
+
+    RETURN 'Material identificat: ' || v_denumire_material;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 'Eroare: Nu exista materiale sau ID invalid.';
+    WHEN TOO_MANY_ROWS THEN
+        RETURN 'Eroare: Proiectul utilizeaza mai multe materiale.';
+    WHEN OTHERS THEN
+        RETURN 'Alta eroare: ' || SQLERRM;
+END;
+/
+
+SET SERVEROUTPUT ON;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('CAZ 1: O singura inregistrare (Succes)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(1004));
+
+    DBMS_OUTPUT.PUT_LINE('CAZ 2: Mai multe inregistrari (TOO_MANY_ROWS)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(1001));
+
+    DBMS_OUTPUT.PUT_LINE('CAZ 3: Nicio inregistrare (NO_DATA_FOUND)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(9999));
+END;
+/

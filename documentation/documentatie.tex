@@ -1,14 +1,14 @@
 \documentclass[12pt, a4paper]{report}
 
 \usepackage[utf8]{inputenc}
-\usepackage[romanian]{babel} % Sets language to Romanian
-\usepackage[margin=2.5cm]{geometry} % Standard margins
-\usepackage{graphicx} % For uploading diagrams/screenshots
-\usepackage{float}    % To force images where you want them
-\usepackage{hyperref} % For clickable Table of Contents
-\usepackage{xcolor}   % For code coloring
-\usepackage{listings} % For code syntax highlighting
-\usepackage{titlesec} % To format chapter titles
+\usepackage[romanian]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{titlesec}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -22,7 +22,7 @@
     keywordstyle=\color{keywordcolor}\bfseries,
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\footnotesize, % Typewriter font
+    basicstyle=\ttfamily\footnotesize,
     breakatwhitespace=false,
     breaklines=true,
     captionpos=b,
@@ -39,7 +39,7 @@
 
 \lstset{style=modernsql}
 
-% --- Terminal Output (monospace, no syntax highlight) ---
+
 \lstdefinestyle{terminal}{
     backgroundcolor=\color{backcolour},
     basicstyle=\ttfamily\footnotesize,
@@ -136,6 +136,12 @@ Implementarea acestui sistem informatic răspunde nevoii de a avea o evidență 
     \centering
     \includegraphics[width=0.95\textwidth]{imgs/sgbd-concept.drawio.png}
     \caption{Diagrama Conceptuală}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{imgs/sgbd005.png}
+    \caption{Diagrama Conceptuală generată de DataGrip}
 \end{figure}
 
 \newpage
@@ -450,11 +456,11 @@ END;
 
 \chapter{Utilizarea Cursoarelor}
 \section*{Enunțul Problemei}
-Sa se scrie o procedura stocata numita \texttt{raport\_financiar\_locatie} care primeste ca parametru numele unei locatii (oras). Procedura va afisa monumentele din acea locatie si sursele lor de finantare, folosind doua cursoare:
+Să se scrie o procedură stocată numită \texttt{raport\_financiar\_locatie} care primește ca parametru numele unei locații (oraș). Procedura va afișa monumentele din acea locație și sursele lor de finanțare, folosind două cursoare:
 
-Cursorul Principal (Independent): Va itera prin toate monumentele care se afla in locatia specificata.
+Cursorul Principal (Independent): Va itera prin toate monumentele care se află în locația specificată.
 
-Cursorul Secundar (Parametrizat/Dependent): Pentru fiecare monument gasit de primul cursor, acest al doilea cursor va cauta toate sursele de finantare ale restaurarilor asociate acelui monument, primind ca parametru ID-ul monumentului.
+Cursorul Secundar (Parametrizat/Dependent): Pentru fiecare monument găsit de primul cursor, acest al doilea cursor va căuta toate sursele de finanțare ale restaurărilor asociate acelui monument, primind ca parametru ID-ul monumentului.
 
 \section*{Rezolvare PL/SQL}
 \begin{lstlisting}[caption={Subprogram cu cursoare}]
@@ -502,9 +508,19 @@ END;
 \end{lstlisting}
 
 \section*{Apel și Rezultat}
+
+\begin{lstlisting}
+    SET SERVEROUTPUT ON;
+BEGIN
+    raport_financiar_locatie('Sinaia');
+    DBMS_OUTPUT.PUT_LINE('');
+    raport_financiar_locatie('Constanta');
+END;
+/
+\end{lstlisting}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta7.png}
+    \includegraphics[width=0.8\textwidth]{imgs/sgbd004.png}
     \caption{Execuția cerinței 7}
 \end{figure}
 
@@ -512,17 +528,52 @@ END;
 
 \chapter{Funcție Stocată}
 \section*{Enunțul Problemei}
-[Funcție care utilizează 3 tabele și tratează excepțiile...]
+Să se scrie o funcție stocată numită \texttt{get\_material\_unic} care primește ca parametru ID-ul unei restaurări și returnează denumirea materialului utilizat în cadrul acesteia. Funcția va interoga trei tabele (MATERIAL, MATERIAL\_RESTAURARE, RESTAURARE) pentru a obține rezultatul. Trebuie tratate cazurile în care restaurarea nu există sau nu are materiale alocate (\texttt{NO\_DATA\_FOUND}) și cazul în care restaurarea utilizează mai multe materiale simultan (\texttt{TOO\_MANY\_ROWS}), returnând mesaje corespunzătoare.
 
 \section*{Rezolvare PL/SQL}
 \begin{lstlisting}[caption={Functia PL/SQL}]
--- Codul tau aici
+CREATE OR REPLACE FUNCTION get_material_unic(p_id_restaurare NUMBER)
+RETURN VARCHAR2 IS
+    v_denumire_material VARCHAR2(50);
+BEGIN
+    SELECT m.denumire
+    INTO v_denumire_material
+    FROM material m
+    JOIN material_restaurare mr ON m.id_material = mr.id_material
+    JOIN restaurare r ON mr.id_restaurare = r.id_restaurare
+    WHERE r.id_restaurare = p_id_restaurare;
+
+    RETURN 'Material identificat: ' || v_denumire_material;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 'Eroare: Nu exista materiale sau ID invalid.';
+    WHEN TOO_MANY_ROWS THEN
+        RETURN 'Eroare: Proiectul utilizeaza mai multe materiale.';
+    WHEN OTHERS THEN
+        RETURN 'Alta eroare: ' || SQLERRM;
+END;
+/
 \end{lstlisting}
 
 \section*{Apel și Rezultat (Tratare Excepții)}
+\begin{lstlisting}
+SET SERVEROUTPUT ON;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('CAZ 1: O singura inregistrare (Succes)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(1004));
+
+    DBMS_OUTPUT.PUT_LINE('CAZ 2: Mai multe inregistrari (TOO_MANY_ROWS)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(1001));
+
+    DBMS_OUTPUT.PUT_LINE('CAZ 3: Nicio inregistrare (NO_DATA_FOUND)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(9999));
+END;
+/
+\end{lstlisting}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta8.png}
+    \includegraphics[width=0.8\textwidth]{imgs/sgdb006.png}
     \caption{Apelul funcției și tratarea excepțiilor}
 \end{figure}
 
