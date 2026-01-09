@@ -1,0 +1,820 @@
+\documentclass[12pt, a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[romanian]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\graphicspath{{imgs/}{documentation/imgs/}}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{titlesec}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{keywordcolor}{rgb}{0.0, 0.0, 1.0}
+
+\lstdefinestyle{modernsql}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{keywordcolor}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    language=SQL,
+    morekeywords={VARCHAR2, NUMBER, DATE, CONSTRAINT, PRIMARY, KEY, FOREIGN, REFERENCES, CREATE, OR, REPLACE, TRIGGER, PROCEDURE, FUNCTION, BEGIN, END, IF, THEN, ELSIF, ELSE, LOOP, EXIT, WHEN, CURSOR, OPEN, FETCH, CLOSE, TYPE, IS, RECORD, TABLE, INDEX, BY, EXCEPTION, PRAGMA, EXCEPTION_INIT}
+}
+
+\lstset{style=modernsql}
+
+
+\titleformat{\chapter}[block]
+  {\normalfont\huge\bfseries}{\thechapter.}{1em}{\Huge}
+\titlespacing*{\chapter}{0pt}{-30pt}{20pt}
+
+\title{Proiect SGBD}
+\author{Robert-Ionuț Voaideș-Negustor}
+\date{2025-2026}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    \Huge
+    \textbf{Sisteme de Gestiune a Bazelor de Date}
+
+    \vspace{0.5cm}
+    \LARGE
+    Proiect
+
+    \vspace{1.5cm}
+    \textbf{Sistem de Gestiune a Restaurării Patrimoniului Cultural}
+
+    \vfill
+
+    \Large
+    \textbf{Student:} Voaideș-Negustor Robert-Ionuț\\
+    \textbf{Grupa:} 251\\
+    \textbf{Seria:} 25\\
+    \textbf{Anul Universitar:} 2025-2026
+
+    \vspace{2cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\chapter*{Introducere}
+
+\section*{Infrastructura utilizata}
+\begin{itemize}
+    \item \textbf{Sistem de operare:} Fedora Linux
+    \item \textbf{Containerizare:} Docker
+    \item \textbf{SGBD:} Oracle Database XE 21c (container \texttt{oracle-xe}, imagine \texttt{gvenzl/oracle-xe:21-slim})
+    \item \textbf{Mediu de lucru:} Visual Studio Code și DataGrip
+\end{itemize}
+
+\chapter{Descrierea Bazei de Date}
+
+\section{Scenariul Real Modelat}
+Această bază de date a fost proiectată pentru a gestiona activitatea unei instituții sau companii specializate în conservarea și restaurarea patrimoniului istoric. Scenariul real modelat urmărește ciclul de viață complet al unui proiect de restaurare, de la identificarea obiectivului (monumentul) și asigurarea surselor de finanțare, până la execuția efectivă și monitorizarea calității lucrărilor.
+
+Baza de date surprinde interacțiunile complexe dintre diversele entități implicate într-un șantier de restaurare: monumentele istorice, echipele multidisciplinare de experți, resursele materiale necesare, instituțiile statului care avizează lucrările și sursele de finanțare.
+
+\section{Utilitatea Bazei de Date}
+Implementarea acestui sistem informatic răspunde nevoii de a avea o evidență clară, transparentă și centralizată asupra modului în care este conservat patrimoniul. Principalele funcționalități și beneficii sunt:
+
+\begin{itemize}
+    \item \textbf{Trasabilitatea intervențiilor:} Sistemul permite crearea unui istoric detaliat al tuturor restaurărilor efectuate asupra unui monument. Se poate verifica oricând ce materiale s-au utilizat și ce experți au participat, informații vitale pentru viitoarele lucrări de întreținere.
+    \item \textbf{Gestionarea resurselor:} Baza de date rezolvă problema alocării eficiente a resurselor. Deoarece experții și stocurile de materiale pot fi partajate între mai multe șantiere simultan, sistemul evidențiază clar distribuția acestora.
+    \item \textbf{Monitorizarea financiară și legală:} Permite urmărirea bugetelor alocate din diverse surse de finanțare, precum și starea avizelor necesare de la autoritățile competente (ex: Ministerul Culturii, Primărie) și rezultatele inspecțiilor de șantier.
+\end{itemize}
+
+\newpage
+
+\chapter{Diagrama Entitate-Relație (ERD)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{imgs/sgbd-er.jpg}
+    \caption{Diagrama ERD a bazei de date}
+\end{figure}
+
+\newpage
+
+\chapter{Diagrama Conceptuală}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{imgs/sgbd-concept.drawio.png}
+    \caption{Diagrama Conceptuală}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{imgs/sgbd005.png}
+    \caption{Diagrama Conceptuală generată de DataGrip}
+\end{figure}
+
+\newpage
+
+\chapter{Implementarea Structurii}
+Mai jos sunt prezentate instrucțiunile de creare a tabelelor și constrângerile de integritate.
+
+\begin{lstlisting}[caption={Crearea tabelelor}]
+CREATE TABLE monument (
+    id_monument NUMBER(5) CONSTRAINT pk_monument PRIMARY KEY,
+    denumire    VARCHAR2(100) NOT NULL,
+    locatie     VARCHAR2(100) NOT NULL
+);
+
+
+CREATE TABLE expert (
+    id_expert    NUMBER(5) CONSTRAINT pk_expert PRIMARY KEY,
+    nume         VARCHAR2(50) NOT NULL,
+    specializare VARCHAR2(50) NOT NULL,
+    email        VARCHAR2(100) CONSTRAINT uq_expert_email UNIQUE
+);
+
+
+CREATE TABLE material (
+    id_material NUMBER(5) CONSTRAINT pk_material PRIMARY KEY,
+    denumire    VARCHAR2(50) NOT NULL,
+    clasa       VARCHAR2(20),
+    risc        VARCHAR2(20)
+);
+
+
+CREATE TABLE finantare (
+    id_finantare NUMBER(5) CONSTRAINT pk_finantare PRIMARY KEY,
+    sursa        VARCHAR2(50) NOT NULL,
+    buget        NUMBER(12, 2) CONSTRAINT ck_buget_pozitiv CHECK (buget > 0)
+);
+
+
+CREATE TABLE autoritate (
+    id_autoritate NUMBER(5) CONSTRAINT pk_autoritate PRIMARY KEY,
+    nume          VARCHAR2(100) NOT NULL,
+    tip           VARCHAR2(50),
+    atributie     VARCHAR2(100)
+);
+
+CREATE TABLE restaurare (
+    id_restaurare NUMBER(5) CONSTRAINT pk_restaurare PRIMARY KEY,
+    id_monument   NUMBER(5) NOT NULL,
+    data_start    DATE DEFAULT SYSDATE,
+    data_final    DATE,
+    stadiu        VARCHAR2(20) CONSTRAINT ck_stadiu CHECK (stadiu IN ('Planificat', 'In executie', 'Finalizat', 'Suspendat')),
+    CONSTRAINT fk_restaurare_monument FOREIGN KEY (id_monument) REFERENCES monument(id_monument),
+    CONSTRAINT ck_date_valide CHECK (data_final >= data_start)
+);
+
+
+CREATE TABLE aviz (
+    id_aviz       NUMBER(5) CONSTRAINT pk_aviz PRIMARY KEY,
+    id_restaurare NUMBER(5) NOT NULL,
+    id_autoritate NUMBER(5) NOT NULL,
+    tip_aviz      VARCHAR2(50) NOT NULL,
+    data_aviz     DATE DEFAULT SYSDATE,
+    CONSTRAINT fk_aviz_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare),
+    CONSTRAINT fk_aviz_autoritate FOREIGN KEY (id_autoritate) REFERENCES autoritate(id_autoritate)
+);
+
+
+CREATE TABLE inspectie (
+    id_inspectie   NUMBER(5) CONSTRAINT pk_inspectie PRIMARY KEY,
+    id_restaurare  NUMBER(5) NOT NULL,
+    data_inspectie DATE DEFAULT SYSDATE,
+    rezultat       VARCHAR2(200),
+    CONSTRAINT fk_inspectie_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
+
+CREATE TABLE expert_restaurare (
+    id_expert     NUMBER(5),
+    id_restaurare NUMBER(5),
+    CONSTRAINT pk_expert_restaurare PRIMARY KEY (id_expert, id_restaurare),
+    CONSTRAINT fk_er_expert FOREIGN KEY (id_expert) REFERENCES expert(id_expert),
+    CONSTRAINT fk_er_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
+
+CREATE TABLE material_restaurare (
+    id_material   NUMBER(5),
+    id_restaurare NUMBER(5),
+    CONSTRAINT pk_material_restaurare PRIMARY KEY (id_material, id_restaurare),
+    CONSTRAINT fk_mr_material FOREIGN KEY (id_material) REFERENCES material(id_material),
+    CONSTRAINT fk_mr_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
+
+CREATE TABLE finantare_restaurare (
+    id_finantare  NUMBER(5),
+    id_restaurare NUMBER(5),
+    CONSTRAINT pk_finantare_restaurare PRIMARY KEY (id_finantare, id_restaurare),
+    CONSTRAINT fk_fr_finantare FOREIGN KEY (id_finantare) REFERENCES finantare(id_finantare),
+    CONSTRAINT fk_fr_restaurare FOREIGN KEY (id_restaurare) REFERENCES restaurare(id_restaurare)
+);
+
+\end{lstlisting}
+
+\newpage
+
+\textbf{Dovada rulării în Oracle:}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{imgs/sgbd001.png}
+    \caption{Rularea comenzilor CREATE TABLE}
+\end{figure}
+
+\newpage
+
+\chapter{Popularea Bazei de Date}
+Au fost inserate minim 5 înregistrări pentru entitățile independente și 10 pentru cele asociative.
+
+\begin{lstlisting}[caption={Inserarea datelor}]
+INSERT INTO monument VALUES (1, 'Castelul Peles', 'Sinaia');
+INSERT INTO monument VALUES (2, 'Biserica Neagra', 'Brasov');
+INSERT INTO monument VALUES (3, 'Cetatea de Scaun', 'Suceava');
+INSERT INTO monument VALUES (4, 'Manastirea Voronet', 'Gura Humorului');
+INSERT INTO monument VALUES (5, 'Cazinoul', 'Constanta');
+
+INSERT INTO expert VALUES (101, 'Popescu Ion', 'Arhitect', 'popescu.i@expert.ro');
+INSERT INTO expert VALUES (102, 'Ionescu Maria', 'Inginer Structurist', 'maria.i@expert.ro');
+INSERT INTO expert VALUES (103, 'Georgescu Vlad', 'Restaurator Pictura', 'vlad.g@expert.ro');
+INSERT INTO expert VALUES (104, 'Dumitru Ana', 'Arheolog', 'ana.d@expert.ro');
+INSERT INTO expert VALUES (105, 'Stanescu Dan', 'Manager Proiect', 'dan.s@expert.ro');
+
+INSERT INTO material VALUES (201, 'Piatra de rau', 'Natural', 'Scazut');
+INSERT INTO material VALUES (202, 'Mortar hidraulic', 'Sintetic', 'Mediu');
+INSERT INTO material VALUES (203, 'Lemn de stejar tratat', 'Natural', 'Ridicat');
+INSERT INTO material VALUES (204, 'Pigment mineral', 'Chimic', 'Mediu');
+INSERT INTO material VALUES (205, 'Caramida arsa', 'Compozit', 'Scazut');
+
+INSERT INTO finantare VALUES (301, 'Ministerul Culturii', 5000000);
+INSERT INTO finantare VALUES (302, 'Fonduri Europene REGIO', 12000000);
+INSERT INTO finantare VALUES (303, 'Buget Local Sinaia', 200000);
+INSERT INTO finantare VALUES (304, 'Donatii Private ONG', 50000);
+INSERT INTO finantare VALUES (305, 'Granturi Norvegiene', 3500000);
+
+INSERT INTO autoritate VALUES (401, 'Ministerul Culturii', 'Guvernamental', 'Avizare patrimoniu');
+INSERT INTO autoritate VALUES (402, 'Primaria Sinaia', 'Local', 'Certificat Urbanism');
+INSERT INTO autoritate VALUES (403, 'ISC Brasov', 'Inspectie', 'Control Calitate');
+INSERT INTO autoritate VALUES (404, 'Directia Judeteana Cultura', 'Judetean', 'Monitorizare');
+INSERT INTO autoritate VALUES (405, 'Primaria Constanta', 'Local', 'Autorizatie Constructie');
+
+INSERT INTO restaurare VALUES (1001, 1, TO_DATE('01-03-2024','DD-MM-YYYY'), TO_DATE('01-12-2025','DD-MM-YYYY'), 'In executie');
+INSERT INTO restaurare VALUES (1002, 2, TO_DATE('15-05-2023','DD-MM-YYYY'), TO_DATE('15-05-2024','DD-MM-YYYY'), 'Finalizat');
+INSERT INTO restaurare VALUES (1003, 5, TO_DATE('01-01-2020','DD-MM-YYYY'), TO_DATE('01-01-2026','DD-MM-YYYY'), 'In executie');
+INSERT INTO restaurare VALUES (1004, 3, TO_DATE('10-10-2025','DD-MM-YYYY'), NULL, 'Planificat');
+INSERT INTO restaurare VALUES (1005, 4, TO_DATE('01-06-2024','DD-MM-YYYY'), TO_DATE('01-09-2024','DD-MM-YYYY'), 'Suspendat');
+
+INSERT INTO aviz VALUES (1, 1001, 401, 'Aviz Favorabil', TO_DATE('20-02-2024','DD-MM-YYYY'));
+INSERT INTO aviz VALUES (2, 1001, 402, 'Autorizatie Constructie', TO_DATE('25-02-2024','DD-MM-YYYY'));
+INSERT INTO aviz VALUES (3, 1003, 405, 'Prelungire Autorizatie', TO_DATE('10-01-2024','DD-MM-YYYY'));
+
+
+INSERT INTO inspectie VALUES (1, 1001, TO_DATE('01-04-2024','DD-MM-YYYY'), 'Conform cu proiectul');
+INSERT INTO inspectie VALUES (2, 1003, TO_DATE('15-04-2024','DD-MM-YYYY'), 'Degradari neprevazute la fatada');
+INSERT INTO inspectie VALUES (3, 1002, TO_DATE('20-03-2024','DD-MM-YYYY'), 'Inspectie finala, lucrari conforme');
+INSERT INTO inspectie VALUES (4, 1004, TO_DATE('12-11-2025','DD-MM-YYYY'), 'Verificare preliminara a santierului');
+INSERT INTO inspectie VALUES (5, 1005, TO_DATE('25-07-2024','DD-MM-YYYY'), 'Necesita remedieri la acoperis');
+
+INSERT INTO expert_restaurare VALUES (101, 1001);
+INSERT INTO expert_restaurare VALUES (102, 1001);
+INSERT INTO expert_restaurare VALUES (105, 1001);
+INSERT INTO expert_restaurare VALUES (101, 1003);
+INSERT INTO expert_restaurare VALUES (102, 1003);
+INSERT INTO expert_restaurare VALUES (103, 1005);
+INSERT INTO expert_restaurare VALUES (104, 1004);
+INSERT INTO expert_restaurare VALUES (105, 1002);
+INSERT INTO expert_restaurare VALUES (102, 1002);
+INSERT INTO expert_restaurare VALUES (101, 1002);
+
+INSERT INTO material_restaurare VALUES (203, 1001);
+INSERT INTO material_restaurare VALUES (205, 1001);
+INSERT INTO material_restaurare VALUES (201, 1002);
+INSERT INTO material_restaurare VALUES (202, 1002);
+INSERT INTO material_restaurare VALUES (201, 1003);
+INSERT INTO material_restaurare VALUES (202, 1003);
+INSERT INTO material_restaurare VALUES (204, 1003);
+INSERT INTO material_restaurare VALUES (201, 1004);
+INSERT INTO material_restaurare VALUES (204, 1005);
+INSERT INTO material_restaurare VALUES (202, 1005);
+
+INSERT INTO finantare_restaurare VALUES (301, 1001);
+INSERT INTO finantare_restaurare VALUES (303, 1001);
+INSERT INTO finantare_restaurare VALUES (304, 1002);
+INSERT INTO finantare_restaurare VALUES (305, 1002);
+INSERT INTO finantare_restaurare VALUES (302, 1003);
+INSERT INTO finantare_restaurare VALUES (301, 1003);
+INSERT INTO finantare_restaurare VALUES (305, 1003);
+INSERT INTO finantare_restaurare VALUES (302, 1004);
+INSERT INTO finantare_restaurare VALUES (301, 1005);
+INSERT INTO finantare_restaurare VALUES (304, 1005);
+
+COMMIT;
+
+\end{lstlisting}
+
+\textbf{Dovada rulării în Oracle:}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{imgs/sgbd002.png}
+    \caption{Rezultatul inserării datelor (nu sunt afișate toate insert-urile)}
+\end{figure}
+
+\newpage
+
+\chapter{Utilizarea Colecțiilor (Tablouri/Vectori)}
+\section*{Enunțul Problemei}
+Să se scrie o procedură stocată numită \texttt{analiza\_complexa\_proiect} care primește ca parametru ID-ul unui proiect de restaurare. Procedura trebuie să realizeze următoarele acțiuni folosind colecții:
+
+Să identifice primele 5 materiale folosite în proiect și să le stocheze într-un Varray.
+
+Să colecteze numele tuturor experților care lucrează la acest proiect într-un Nested Table.
+
+Să calculeze un bonus simbolic pentru fiecare expert (bazat pe ID-ul expertului) și să stocheze aceste valori într-un Associative Array , având ID-ul expertului drept cheie. La final, să afișeze un raport sintetic.
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Subprogram cu colectii}]
+CREATE OR REPLACE PROCEDURE analiza_complexa_proiect (
+    p_id_restaurare IN restaurare.id_restaurare%TYPE
+) IS
+
+    TYPE t_materiale_va IS VARRAY(5) OF VARCHAR2(50);
+    v_lista_materiale t_materiale_va;
+
+    TYPE t_experti_nt IS TABLE OF VARCHAR2(50);
+    v_lista_experti t_experti_nt := t_experti_nt();
+
+    TYPE t_bonusuri_aa IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    v_map_bonusuri t_bonusuri_aa;
+
+    v_id_expert expert.id_expert%TYPE;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Analiza Proiectului ID: ' || p_id_restaurare);
+
+    SELECT m.denumire
+    BULK COLLECT INTO v_lista_materiale
+    FROM material m
+    JOIN material_restaurare mr ON m.id_material = mr.id_material
+    WHERE mr.id_restaurare = p_id_restaurare
+    AND ROWNUM <= 5;
+
+    DBMS_OUTPUT.PUT_LINE('> Materiale principale (Varray):');
+    IF v_lista_materiale.COUNT > 0 THEN
+        FOR i IN 1..v_lista_materiale.COUNT LOOP
+            DBMS_OUTPUT.PUT_LINE('  ' || i || '. ' || v_lista_materiale(i));
+        END LOOP;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('  Niciun material gasit.');
+    END IF;
+
+    FOR r IN (
+        SELECT e.id_expert, e.nume
+        FROM expert e
+        JOIN expert_restaurare er ON e.id_expert = er.id_expert
+        WHERE er.id_restaurare = p_id_restaurare
+    ) LOOP
+
+        v_lista_experti.EXTEND;
+        v_lista_experti(v_lista_experti.LAST) := r.nume;
+
+        v_map_bonusuri(r.id_expert) := 1500;
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('> Lista Experti (Nested Table):');
+    IF v_lista_experti.COUNT > 0 THEN
+        FOR i IN 1..v_lista_experti.COUNT LOOP
+            DBMS_OUTPUT.PUT_LINE('  - ' || v_lista_experti(i));
+        END LOOP;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('  Niciun expert alocat.');
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('> Calcul Bonusuri (Associative Array):');
+    v_id_expert := v_map_bonusuri.FIRST;
+    WHILE v_id_expert IS NOT NULL LOOP
+        DBMS_OUTPUT.PUT_LINE('  Expert ID ' || v_id_expert || ' primeste bonus: ' || v_map_bonusuri(v_id_expert) || ' RON');
+        v_id_expert := v_map_bonusuri.NEXT(v_id_expert);
+    END LOOP;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Nu s-au gasit date pentru acest proiect.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: ' || SQLERRM);
+END;
+/
+\end{lstlisting}
+
+\section*{Apel și Rezultat}
+\begin{lstlisting}
+SET SERVEROUTPUT ON;
+BEGIN
+    analiza_complexa_proiect(1002);
+END;
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imgs/sgbd003.png}
+    \caption{Execuția cerinței 6}
+\end{figure}
+
+\newpage
+
+\chapter{Utilizarea Cursoarelor}
+\section*{Enunțul Problemei}
+Să se scrie o procedură stocată numită \texttt{raport\_financiar\_locatie} care primește ca parametru numele unei locații (oraș). Procedura va afișa monumentele din acea locație și sursele lor de finanțare, folosind două cursoare:
+
+Cursorul Principal (Independent): Va itera prin toate monumentele care se află în locația specificată.
+
+Cursorul Secundar (Parametrizat/Dependent): Pentru fiecare monument găsit de primul cursor, acest al doilea cursor va căuta toate sursele de finanțare ale restaurărilor asociate acelui monument, primind ca parametru ID-ul monumentului.
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Subprogram cu cursoare}]
+CREATE OR REPLACE PROCEDURE raport_financiar_locatie (
+    p_locatie IN monument.locatie%TYPE
+) IS
+    CURSOR c_monumente IS
+        SELECT id_monument, denumire
+        FROM monument
+        WHERE UPPER(locatie) = UPPER(p_locatie);
+
+    CURSOR c_finantari (p_id_mon NUMBER) IS
+        SELECT f.sursa, f.buget, r.stadiu
+        FROM finantare f
+        JOIN finantare_restaurare fr ON f.id_finantare = fr.id_finantare
+        JOIN restaurare r ON fr.id_restaurare = r.id_restaurare
+        WHERE r.id_monument = p_id_mon;
+
+    v_total_monument NUMBER;
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Raport Financiar pentru: ' || p_locatie);
+
+    FOR r_mon IN c_monumente LOOP
+        DBMS_OUTPUT.PUT_LINE('Monument: ' || r_mon.denumire || ' (ID: ' || r_mon.id_monument || ')');
+
+        v_total_monument := 0;
+
+        FOR r_fin IN c_finantari(r_mon.id_monument) LOOP
+            DBMS_OUTPUT.PUT_LINE('   > Sursa: ' || r_fin.sursa ||
+                                 ' | Buget: ' || r_fin.buget ||
+                                 ' | Stadiu: ' || r_fin.stadiu);
+            v_total_monument := v_total_monument + r_fin.buget;
+        END LOOP;
+
+        IF v_total_monument = 0 THEN
+             DBMS_OUTPUT.PUT_LINE('   > Nu exista finantari inregistrate.');
+        ELSE
+             DBMS_OUTPUT.PUT_LINE('   > TOTAL MONUMENT: ' || v_total_monument || ' RON');
+        END IF;
+
+    END LOOP;
+END;
+/
+\end{lstlisting}
+
+\section*{Apel și Rezultat}
+
+\begin{lstlisting}
+    SET SERVEROUTPUT ON;
+BEGIN
+    raport_financiar_locatie('Sinaia');
+    DBMS_OUTPUT.PUT_LINE('');
+    raport_financiar_locatie('Constanta');
+END;
+/
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imgs/sgbd004.png}
+    \caption{Execuția cerinței 7}
+\end{figure}
+
+\newpage
+
+\chapter{Funcție Stocată}
+\section*{Enunțul Problemei}
+Să se scrie o funcție stocată numită \texttt{get\_material\_unic} care primește ca parametru ID-ul unei restaurări și returnează denumirea materialului utilizat în cadrul acesteia. Funcția va interoga trei tabele (MATERIAL, MATERIAL\_RESTAURARE, RESTAURARE) pentru a obține rezultatul. Trebuie tratate cazurile în care restaurarea nu există sau nu are materiale alocate (\texttt{NO\_DATA\_FOUND}) și cazul în care restaurarea utilizează mai multe materiale simultan (\texttt{TOO\_MANY\_ROWS}), returnând mesaje corespunzătoare.
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Functia PL/SQL}]
+CREATE OR REPLACE FUNCTION get_material_unic(p_id_restaurare NUMBER)
+RETURN VARCHAR2 IS
+    v_denumire_material VARCHAR2(50);
+BEGIN
+    SELECT m.denumire
+    INTO v_denumire_material
+    FROM material m
+    JOIN material_restaurare mr ON m.id_material = mr.id_material
+    JOIN restaurare r ON mr.id_restaurare = r.id_restaurare
+    WHERE r.id_restaurare = p_id_restaurare;
+
+    RETURN 'Material identificat: ' || v_denumire_material;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN 'Eroare: Nu exista materiale sau ID invalid.';
+    WHEN TOO_MANY_ROWS THEN
+        RETURN 'Eroare: Proiectul utilizeaza mai multe materiale.';
+    WHEN OTHERS THEN
+        RETURN 'Alta eroare: ' || SQLERRM;
+END;
+/
+\end{lstlisting}
+
+\section*{Apel și Rezultat (Tratare Excepții)}
+\begin{lstlisting}
+SET SERVEROUTPUT ON;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('CAZ 1: O singura inregistrare (Succes)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(1004));
+
+    DBMS_OUTPUT.PUT_LINE('CAZ 2: Mai multe inregistrari (TOO_MANY_ROWS)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(1001));
+
+    DBMS_OUTPUT.PUT_LINE('CAZ 3: Nicio inregistrare (NO_DATA_FOUND)');
+    DBMS_OUTPUT.PUT_LINE(get_material_unic(9999));
+END;
+/
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imgs/sgdb006.png}
+    \caption{Apelul funcției și tratarea excepțiilor}
+\end{figure}
+
+\newpage
+
+\chapter{Procedură Stocată}
+\section*{Enunțul Problemei}
+Să se scrie o procedură stocată numită \texttt{audit\_complex\_monument} care primește doi parametri: ID-ul unui monument și un prag minim financiar. Procedura va calcula bugetul total alocat și numărul de experți implicați în restaurările acelui monument, utilizând o singură interogare ce unește 5 tabele (\texttt{MONUMENT}, \texttt{RESTAURARE}, \texttt{FINANTARE\_RESTAURARE}, \texttt{FINANTARE}, \texttt{EXPERT\_RESTAURARE}). Să se definească și să se trateze două excepții proprii:
+
+\texttt{exc\_fonduri\_insuficiente}: Se declanșează dacă bugetul total este sub pragul minim furnizat ca parametru.
+
+\texttt{exc\_expertiza\_limitata}: Se declanșează dacă la proiect participă mai puțin de 2 experți. De asemenea, să se trateze excepția de sistem \texttt{NO\_DATA\_FOUND}.
+
+\section*{Rezolvare PL/SQL}
+\begin{lstlisting}[caption={Procedura PL/SQL}]
+CREATE OR REPLACE PROCEDURE audit_complex_monument (
+    p_id_monument IN NUMBER,
+    p_prag_financiar IN NUMBER
+) IS
+    v_total_buget NUMBER;
+    v_nr_experti NUMBER;
+
+    exc_fonduri_insuficiente EXCEPTION;
+    exc_expertiza_limitata EXCEPTION;
+BEGIN
+    SELECT SUM(f.buget), COUNT(DISTINCT er.id_expert)
+    INTO v_total_buget, v_nr_experti
+    FROM monument m
+    JOIN restaurare r ON m.id_monument = r.id_monument
+    JOIN finantare_restaurare fr ON r.id_restaurare = fr.id_restaurare
+    JOIN finantare f ON fr.id_finantare = f.id_finantare
+    JOIN expert_restaurare er ON r.id_restaurare = er.id_restaurare
+    WHERE m.id_monument = p_id_monument
+    GROUP BY m.id_monument;
+
+    IF v_total_buget < p_prag_financiar THEN
+        RAISE exc_fonduri_insuficiente;
+    END IF;
+
+    IF v_nr_experti < 2 THEN
+        RAISE exc_expertiza_limitata;
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('Audit trecut cu succes. Buget: ' || v_total_buget || ' RON, Experti: ' || v_nr_experti);
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: Monumentul nu are restaurari active, finantari sau experti alocati.');
+    WHEN exc_fonduri_insuficiente THEN
+        DBMS_OUTPUT.PUT_LINE('Alerta: Fonduri sub pragul minim (' || v_total_buget || ' < ' || p_prag_financiar || ').');
+    WHEN exc_expertiza_limitata THEN
+        DBMS_OUTPUT.PUT_LINE('Alerta: Echipa tehnica insuficienta (' || v_nr_experti || ' experti).');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare necunoscuta: ' || SQLERRM);
+END;
+/
+\end{lstlisting}
+
+\section*{Apel și Rezultat}
+\begin{lstlisting}
+SET SERVEROUTPUT ON;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(' CAZ 1: Succes (Castelul Peles, Buget mic cerut) ');
+    audit_complex_monument(1, 1000);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 2: Exceptie Proprie 1 - Fonduri Insuficiente ');
+    audit_complex_monument(1, 999999999);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 3: Exceptie Proprie 2 - Expertiza Limitata (Voronet) ');
+    audit_complex_monument(4, 100);
+
+    DBMS_OUTPUT.PUT_LINE(' CAZ 4: Exceptie Sistem - NO_DATA_FOUND ');
+    % audit_complex_monument(99, 1000);
+END;
+/
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imgs/sgbd007.png}
+    \caption{Execuția procedurii}
+\end{figure}
+
+\newpage
+
+\chapter{Trigger LMD la Nivel de Comandă}
+\section*{Enunțul Problemei}
+Trigger LMD la nivel de comandă (statement-level) care securizează tabela \texttt{MONUMENT}. Trigger-ul se declanșează înainte de orice instrucțiune \texttt{DELETE} și oprește execuția, afișând un mesaj de eroare personalizat, deoarece ștergerea monumentelor istorice din baza de date este strict interzisă prin politica instituției.
+
+\section*{Definire Trigger}
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER trg_stop_stergere_monument
+BEFORE DELETE ON monument
+BEGIN
+    RAISE_APPLICATION_ERROR(-20005, 'Securitate: Stergerea inregistrarilor din tabela MONUMENT este interzisa!');
+END;
+/
+\end{lstlisting}
+
+\section*{Declanșare}
+\begin{lstlisting}
+DELETE FROM monument WHERE id_monument = 1;
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{imgs/sgbd008.png}
+    \caption{Demonstrație declanșare trigger}
+\end{figure}
+
+\newpage
+
+\chapter{Trigger LMD la Nivel de Linie}
+\section*{Enuntul Problemei}
+Un trigger LMD la nivel de linie (row-level) pe tabelul \texttt{RESTAURARE}. Trigger-ul va interzice modificarea stadiului unui proiect inapoi in \texttt{"In executie"} sau \texttt{"Planificat"} daca acesta a fost deja marcat anterior ca \texttt{"Finalizat"} (se interzice redeschiderea proiectelor inchise).
+
+\section*{Definire Trigger}
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER trg_blocare_redeschidere
+BEFORE UPDATE ON restaurare
+FOR EACH ROW
+BEGIN
+    IF :OLD.stadiu = 'Finalizat'
+       AND :NEW.stadiu IN ('In executie', 'Planificat') THEN
+        RAISE_APPLICATION_ERROR(
+            -20020,
+            'Eroare: Un proiect finalizat nu poate fi redeschis!'
+        );
+    END IF;
+END;
+/
+\end{lstlisting}
+
+\section*{Declanșare}
+\begin{lstlisting}
+UPDATE restaurare
+SET stadiu = 'In executie'
+WHERE id_restaurare = 1002;
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{imgs/sgbd009.png}
+    \caption{Demonstrație declanșare trigger}
+\end{figure}
+
+\newpage
+
+\chapter{Trigger LDD}
+\section*{Enunțul Problemei}
+Se definește un tabel de log numit \texttt{LOG\_LDD} și un trigger LDD la nivel de schemă. Trigger-ul se declanșează automat după orice instrucțiune de creare (\texttt{CREATE}), modificare (\texttt{ALTER}) sau ștergere (\texttt{DROP}) a unui obiect din baza de date și înregistrează detaliile acțiunii în tabelul de log.
+
+\begin{lstlisting}
+CREATE TABLE log_ldd (
+    utilizator    VARCHAR2(30),
+    data_actiune  DATE,
+    tip_eveniment VARCHAR2(30),
+    nume_obiect   VARCHAR2(50)
+);
+
+CREATE OR REPLACE TRIGGER trg_audit_ldd
+AFTER CREATE OR DROP OR ALTER ON SCHEMA
+BEGIN
+    INSERT INTO log_ldd (utilizator, data_actiune, tip_eveniment, nume_obiect)
+    VALUES (USER, SYSDATE, ORA_SYSEVENT, ORA_DICT_OBJ_NAME);
+END;
+/
+\end{lstlisting}
+
+\section*{Declanșare}
+\begin{lstlisting}
+CREATE TABLE test_temp (id NUMBER);
+DROP TABLE test_temp;
+
+SELECT * FROM log_ldd;
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imgs/sgb10.png}
+    \caption{Demonstrație declanșare trigger LDD}
+\end{figure}
+
+\newpage
+
+\chapter{Pachet PL/SQL}
+\section*{Enunțul Problemei}
+Să se creeze un pachet numit \texttt{pkg\_audit\_rapid} pentru verificarea experților. Pachetul va conține două tipuri (o listă de ID-uri și un tip record pentru statistici), două funcții (una verifică dacă un expert există, alta numără proiectele lui) și două proceduri (una procesează o listă de experți, cealaltă afișează un raport scurt).
+
+\section*{Specificația Pachetului}
+\begin{lstlisting}
+CREATE OR REPLACE PACKAGE pkg_audit_rapid AS
+    TYPE t_lista_id IS TABLE OF NUMBER;
+    TYPE t_stats   IS RECORD (nr_proiecte NUMBER);
+
+    FUNCTION exista_expert(p_id NUMBER) RETURN BOOLEAN;
+    FUNCTION nr_proiecte(p_id NUMBER) RETURN NUMBER;
+
+    PROCEDURE verifica_lista(p_lista t_lista_id);
+    PROCEDURE raport_scurt(p_id NUMBER);
+END;
+/
+\end{lstlisting}
+
+\section*{Corpul Pachetului}
+\begin{lstlisting}
+CREATE OR REPLACE PACKAGE BODY pkg_audit_rapid AS
+
+    FUNCTION exista_expert(p_id NUMBER) RETURN BOOLEAN IS
+        v_chk NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_chk FROM expert WHERE id_expert = p_id;
+        RETURN v_chk > 0;
+    END;
+
+    FUNCTION nr_proiecte(p_id NUMBER) RETURN NUMBER IS
+        v_count NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_count FROM expert_restaurare WHERE id_expert = p_id;
+        RETURN v_count;
+    END;
+
+    PROCEDURE verifica_lista(p_lista t_lista_id) IS
+    BEGIN
+        FOR i IN 1..p_lista.COUNT LOOP
+            IF exista_expert(p_lista(i)) THEN
+                DBMS_OUTPUT.PUT_LINE('ID ' || p_lista(i) || ' valid.');
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('ID ' || p_lista(i) || ' INEXISTENT.');
+            END IF;
+        END LOOP;
+    END;
+
+    PROCEDURE raport_scurt(p_id NUMBER) IS
+        v_stat t_stats;
+    BEGIN
+        v_stat.nr_proiecte := nr_proiecte(p_id);
+        DBMS_OUTPUT.PUT_LINE('Expertul ' || p_id || ' are ' || v_stat.nr_proiecte || ' proiecte.');
+    END;
+
+END;
+/
+\end{lstlisting}
+
+\section*{Apel Funcționalități}
+\begin{lstlisting}
+SET SERVEROUTPUT ON;
+DECLARE
+    v_lista pkg_audit_rapid.t_lista_id := pkg_audit_rapid.t_lista_id(101, 999);
+BEGIN
+    pkg_audit_rapid.verifica_lista(v_lista);
+    pkg_audit_rapid.raport_scurt(101);
+END;
+/
+\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{imgs/sgbd011.png}
+    \caption{Execuția elementelor din pachet}
+\end{figure}
+
+\end{document}
