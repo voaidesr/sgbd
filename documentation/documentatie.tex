@@ -4,6 +4,7 @@
 \usepackage[romanian]{babel}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{graphicx}
+\graphicspath{{imgs/}{documentation/imgs/}}
 \usepackage{float}
 \usepackage{hyperref}
 \usepackage{xcolor}
@@ -39,21 +40,6 @@
 
 \lstset{style=modernsql}
 
-
-\lstdefinestyle{terminal}{
-    backgroundcolor=\color{backcolour},
-    basicstyle=\ttfamily\footnotesize,
-    breaklines=true,
-    keepspaces=true,
-    numbers=none,
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
-    tabsize=2,
-    keywordstyle=\color{black},
-    commentstyle=\color{black},
-    stringstyle=\color{black}
-}
 
 \titleformat{\chapter}[block]
   {\normalfont\huge\bfseries}{\thechapter.}{1em}{\Huge}
@@ -646,7 +632,7 @@ BEGIN
     audit_complex_monument(4, 100);
 
     DBMS_OUTPUT.PUT_LINE(' CAZ 4: Exceptie Sistem - NO_DATA_FOUND ');
-    audit_complex_monument(99, 1000);
+    % audit_complex_monument(99, 1000);
 END;
 /
 \end{lstlisting}
@@ -685,50 +671,149 @@ DELETE FROM monument WHERE id_monument = 1;
 \newpage
 
 \chapter{Trigger LMD la Nivel de Linie}
+\section*{Enuntul Problemei}
+Un trigger LMD la nivel de linie (row-level) pe tabelul \texttt{RESTAURARE}. Trigger-ul va interzice modificarea stadiului unui proiect inapoi in \texttt{"In executie"} sau \texttt{"Planificat"} daca acesta a fost deja marcat anterior ca \texttt{"Finalizat"} (se interzice redeschiderea proiectelor inchise).
+
 \section*{Definire Trigger}
 \begin{lstlisting}
--- Codul trigger-ului
+CREATE OR REPLACE TRIGGER trg_blocare_redeschidere
+BEFORE UPDATE ON restaurare
+FOR EACH ROW
+BEGIN
+    IF :OLD.stadiu = 'Finalizat'
+       AND :NEW.stadiu IN ('In executie', 'Planificat') THEN
+        RAISE_APPLICATION_ERROR(
+            -20020,
+            'Eroare: Un proiect finalizat nu poate fi redeschis!'
+        );
+    END IF;
+END;
+/
 \end{lstlisting}
 
 \section*{Declanșare}
+\begin{lstlisting}
+UPDATE restaurare
+SET stadiu = 'In executie'
+WHERE id_restaurare = 1002;
+\end{lstlisting}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta11.png}
+    \includegraphics[width=0.7\textwidth]{imgs/sgbd009.png}
     \caption{Demonstrație declanșare trigger}
 \end{figure}
 
 \newpage
 
 \chapter{Trigger LDD}
-\section*{Definire Trigger}
+\section*{Enunțul Problemei}
+Se definește un tabel de log numit \texttt{LOG\_LDD} și un trigger LDD la nivel de schemă. Trigger-ul se declanșează automat după orice instrucțiune de creare (\texttt{CREATE}), modificare (\texttt{ALTER}) sau ștergere (\texttt{DROP}) a unui obiect din baza de date și înregistrează detaliile acțiunii în tabelul de log.
+
 \begin{lstlisting}
--- Codul trigger-ului pentru comenzi de tip CREATE/DROP/ALTER
+CREATE TABLE log_ldd (
+    utilizator    VARCHAR2(30),
+    data_actiune  DATE,
+    tip_eveniment VARCHAR2(30),
+    nume_obiect   VARCHAR2(50)
+);
+
+CREATE OR REPLACE TRIGGER trg_audit_ldd
+AFTER CREATE OR DROP OR ALTER ON SCHEMA
+BEGIN
+    INSERT INTO log_ldd (utilizator, data_actiune, tip_eveniment, nume_obiect)
+    VALUES (USER, SYSDATE, ORA_SYSEVENT, ORA_DICT_OBJ_NAME);
+END;
+/
 \end{lstlisting}
 
 \section*{Declanșare}
+\begin{lstlisting}
+CREATE TABLE test_temp (id NUMBER);
+DROP TABLE test_temp;
+
+SELECT * FROM log_ldd;
+\end{lstlisting}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta12.png}
+    \includegraphics[width=0.8\textwidth]{imgs/sgb10.png}
     \caption{Demonstrație declanșare trigger LDD}
 \end{figure}
 
 \newpage
 
-\chapter{Pachet PL/SQL (Opțional)}
+\chapter{Pachet PL/SQL}
+\section*{Enunțul Problemei}
+Să se creeze un pachet numit \texttt{pkg\_audit\_rapid} pentru verificarea experților. Pachetul va conține două tipuri (o listă de ID-uri și un tip record pentru statistici), două funcții (una verifică dacă un expert există, alta numără proiectele lui) și două proceduri (una procesează o listă de experți, cealaltă afișează un raport scurt).
+
 \section*{Specificația Pachetului}
 \begin{lstlisting}
--- Codul specificatiei
+CREATE OR REPLACE PACKAGE pkg_audit_rapid AS
+    TYPE t_lista_id IS TABLE OF NUMBER;
+    TYPE t_stats   IS RECORD (nr_proiecte NUMBER);
+
+    FUNCTION exista_expert(p_id NUMBER) RETURN BOOLEAN;
+    FUNCTION nr_proiecte(p_id NUMBER) RETURN NUMBER;
+
+    PROCEDURE verifica_lista(p_lista t_lista_id);
+    PROCEDURE raport_scurt(p_id NUMBER);
+END;
+/
 \end{lstlisting}
 
 \section*{Corpul Pachetului}
 \begin{lstlisting}
--- Codul body-ului
+CREATE OR REPLACE PACKAGE BODY pkg_audit_rapid AS
+
+    FUNCTION exista_expert(p_id NUMBER) RETURN BOOLEAN IS
+        v_chk NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_chk FROM expert WHERE id_expert = p_id;
+        RETURN v_chk > 0;
+    END;
+
+    FUNCTION nr_proiecte(p_id NUMBER) RETURN NUMBER IS
+        v_count NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_count FROM expert_restaurare WHERE id_expert = p_id;
+        RETURN v_count;
+    END;
+
+    PROCEDURE verifica_lista(p_lista t_lista_id) IS
+    BEGIN
+        FOR i IN 1..p_lista.COUNT LOOP
+            IF exista_expert(p_lista(i)) THEN
+                DBMS_OUTPUT.PUT_LINE('ID ' || p_lista(i) || ' valid.');
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('ID ' || p_lista(i) || ' INEXISTENT.');
+            END IF;
+        END LOOP;
+    END;
+
+    PROCEDURE raport_scurt(p_id NUMBER) IS
+        v_stat t_stats;
+    BEGIN
+        v_stat.nr_proiecte := nr_proiecte(p_id);
+        DBMS_OUTPUT.PUT_LINE('Expertul ' || p_id || ' are ' || v_stat.nr_proiecte || ' proiecte.');
+    END;
+
+END;
+/
 \end{lstlisting}
 
 \section*{Apel Funcționalități}
+\begin{lstlisting}
+SET SERVEROUTPUT ON;
+DECLARE
+    v_lista pkg_audit_rapid.t_lista_id := pkg_audit_rapid.t_lista_id(101, 999);
+BEGIN
+    pkg_audit_rapid.verifica_lista(v_lista);
+    pkg_audit_rapid.raport_scurt(101);
+END;
+/
+\end{lstlisting}
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\textwidth]{screenshot_cerinta13.png}
+    \includegraphics[width=0.8\textwidth]{imgs/sgbd011.png}
     \caption{Execuția elementelor din pachet}
 \end{figure}
 

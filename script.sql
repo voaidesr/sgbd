@@ -438,3 +438,109 @@ END;
 
 -- declansare trigger
 DELETE FROM monument WHERE id_monument = 1;
+
+-- 11.
+
+CREATE OR REPLACE TRIGGER trg_blocare_redeschidere
+BEFORE UPDATE ON restaurare
+FOR EACH ROW
+BEGIN
+    IF :OLD.stadiu = 'Finalizat'
+       AND :NEW.stadiu IN ('In executie', 'Planificat') THEN
+        RAISE_APPLICATION_ERROR(
+            -20020,
+            'Eroare: Un proiect finalizat nu poate fi redeschis!'
+        );
+    END IF;
+END;
+/
+
+-- declansare trigger
+UPDATE restaurare
+SET stadiu = 'In executie'
+WHERE id_restaurare = 1002;
+
+-- 12.
+
+CREATE TABLE log_ldd (
+    utilizator    VARCHAR2(30),
+    data_actiune  DATE,
+    tip_eveniment VARCHAR2(30),
+    nume_obiect   VARCHAR2(50)
+);
+
+CREATE OR REPLACE TRIGGER trg_audit_ldd
+AFTER CREATE OR DROP OR ALTER ON SCHEMA
+BEGIN
+    INSERT INTO log_ldd (utilizator, data_actiune, tip_eveniment, nume_obiect)
+    VALUES (USER, SYSDATE, ORA_SYSEVENT, ORA_DICT_OBJ_NAME);
+END;
+/
+
+-- declansam trigger-ul cu doua evenimente diferite
+CREATE TABLE test_temp (id NUMBER);
+DROP TABLE test_temp;
+
+-- verificam logging-ul
+SELECT * FROM log_ldd;
+
+-- 13.
+CREATE OR REPLACE PACKAGE pkg_audit_rapid AS
+    TYPE t_lista_id IS TABLE OF NUMBER;
+    TYPE t_stats   IS RECORD (nr_proiecte NUMBER);
+
+    FUNCTION exista_expert(p_id NUMBER) RETURN BOOLEAN;
+    FUNCTION nr_proiecte(p_id NUMBER) RETURN NUMBER;
+
+    PROCEDURE verifica_lista(p_lista t_lista_id);
+    PROCEDURE raport_scurt(p_id NUMBER);
+END;
+/
+
+
+CREATE OR REPLACE PACKAGE BODY pkg_audit_rapid AS
+
+    FUNCTION exista_expert(p_id NUMBER) RETURN BOOLEAN IS
+        v_chk NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_chk FROM expert WHERE id_expert = p_id;
+        RETURN v_chk > 0;
+    END;
+
+    FUNCTION nr_proiecte(p_id NUMBER) RETURN NUMBER IS
+        v_count NUMBER;
+    BEGIN
+        SELECT COUNT(*) INTO v_count FROM expert_restaurare WHERE id_expert = p_id;
+        RETURN v_count;
+    END;
+
+    PROCEDURE verifica_lista(p_lista t_lista_id) IS
+    BEGIN
+        FOR i IN 1..p_lista.COUNT LOOP
+            IF exista_expert(p_lista(i)) THEN
+                DBMS_OUTPUT.PUT_LINE('ID ' || p_lista(i) || ' valid.');
+            ELSE
+                DBMS_OUTPUT.PUT_LINE('ID ' || p_lista(i) || ' INEXISTENT.');
+            END IF;
+        END LOOP;
+    END;
+
+    PROCEDURE raport_scurt(p_id NUMBER) IS
+        v_stat t_stats;
+    BEGIN
+        v_stat.nr_proiecte := nr_proiecte(p_id);
+        DBMS_OUTPUT.PUT_LINE('Expertul ' || p_id || ' are ' || v_stat.nr_proiecte || ' proiecte.');
+    END;
+
+END;
+/
+
+-- apel
+SET SERVEROUTPUT ON;
+DECLARE
+    v_lista pkg_audit_rapid.t_lista_id := pkg_audit_rapid.t_lista_id(101, 999);
+BEGIN
+    pkg_audit_rapid.verifica_lista(v_lista);
+    pkg_audit_rapid.raport_scurt(101);
+END;
+/
